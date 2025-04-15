@@ -41,18 +41,19 @@ def home():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    username = request.form["email"]
-    password = request.form["password"]
-    user = usuariosDao.authenticate_user(username, password)
-    if user:
-        session["user_id"] = user[0]
-        session["user_name"] = user[1]
-        session["user_email"] = user[2]
-        session["user_biografia"] = user[5]
-        return redirect(url_for("home"))
-    else:
-        error = "Invalid username or password"
-        return render_template("login.html", error=error)
+    if request.method == "POST":
+        nombre_usuario = request.form["nombre_usuario"]
+        contraseña = request.form["contraseña"]
+        
+        user = usuariosDao.get_user_by_username(nombre_usuario)
+        
+        if user and user[3] == contraseña:
+            session["user_id"] = user[0]
+            return redirect(url_for("home"))
+        else:
+            error = "Invalid username or password"
+            return render_template("login.html", error=error)
+    return render_template("login.html")
 
 @app.route("/logout")
 def logout():
