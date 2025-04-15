@@ -1,141 +1,97 @@
-# Documentación de la API y Endpoints
+# API - Sistema de Gestión de Proyectos
 
-Este documento detalla los endpoints principales de la aplicación Flask para la gestión de proyectos y la autenticación de usuarios. Se incluyen descripciones, rutas y métodos HTTP, así como una breve explicación del comportamiento de cada endpoint.
+Esta API corresponde a un sistema web de gestión de proyectos colaborativos, similar a GitHub, desarrollada con Flask.
 
----
-
-## Tabla de Contenidos
-
-- [Visión General](#visión-general)
-- [Endpoints de Autenticación](#endpoints-de-autenticación)
-  - [GET `/` - Página de Login](#get--página-de-login)
-  - [GET/POST `/login` - Iniciar Sesión](#getpost-login---iniciar-sesión)
-  - [GET `/logout` - Cerrar Sesión](#get-logout---cerrar-sesión)
-  - [POST `/register` - Registro de Usuario](#post-register---registro-de-usuario)
-- [Endpoints de Gestión de Proyectos](#endpoints-de-gestión-de-proyectos)
-  - [GET `/home` - Página Principal](#get-home---página-principal)
-  - [POST `/home/create_project` - Crear Proyecto](#post-homecreate_project---crear-proyecto)
-  - [GET `/home/edit_project/<int:project_id>` - Editar Proyecto](#get-homeedit_projectintproject_id---editar-proyecto)
-  - [POST `/home/update_project/<int:project_id>` - Actualizar Proyecto](#post-homeupdate_projectintproject_id---actualizar-proyecto)
-  - [GET `/home/delete_project/<int:project_id>` - Eliminar Proyecto](#get-homedelete_projectintproject_id---eliminar-proyecto)
-  - [GET `/home/view_project/<int:project_id>` - Ver Detalles del Proyecto](#get-homeview_projectintproject_id---ver-detalles-del-proyecto)
-- [Notas Adicionales](#notas-adicionales)
+## Endpoints
 
 ---
 
-## Visión General
-
-La aplicación es un sistema de gestión de proyectos colaborativos inspirado en GitHub. Permite:
-- Autenticación y registro de usuarios.
-- Gestión básica de proyectos: creación, edición, actualización y eliminación.
-- Visualización de detalles de un proyecto, incluyendo comentarios, archivos y colaboradores.
-
-La lógica de negocio se encuentra encapsulada en varios Data Access Objects (DAO) (por ejemplo, `UsuariosDAO`, `ProyectosDAO`, etc.) que se comunican con la base de datos a través de una conexión compartida.
+### `/`
+- **Método:** `GET`
+- **Descripción:** Muestra la página de inicio de sesión (`login.html`).
 
 ---
 
-## Endpoints de Autenticación
-
-### GET `/`
-- **Descripción:**  
-  Endpoint principal que muestra la página de login.
-- **Método HTTP:** GET
-- **Respuesta:** Renderiza la plantilla `login.html`.
+### `/home`
+- **Método:** `GET`
+- **Descripción:** Página de inicio para usuarios autenticados.
+  - Si el usuario tiene sesión iniciada, se cargan los proyectos que le pertenecen.
+  - Si no hay sesión activa, redirige a la página de login (`/`).
 
 ---
 
-### GET/POST `/login` - Iniciar Sesión
-- **Descripción:**  
-  Procesa el inicio de sesión del usuario. Valida email y contraseña a través del DAO de usuarios.  
-  - Si la autenticación es exitosa, guarda los datos del usuario en la sesión y redirige a `/home`.
-  - En caso contrario, muestra un mensaje de error y vuelve a renderizar `login.html`.
-- **Método HTTP:** GET (para renderizar el formulario) y POST (para procesar el login).
+### `/login`
+- **Métodos:** `GET`, `POST`
+- **GET:** Muestra el formulario de inicio de sesión (`login.html`).
+- **POST:** Procesa el inicio de sesión:
+  - Recibe `email` y `password` del formulario.
+  - Verifica las credenciales con `UsuariosDAO`.
+  - Si son válidas, guarda los datos en la sesión y redirige a `/home`.
+  - Si no son válidas, vuelve a `login.html` con un mensaje de error.
 
 ---
 
-### GET `/logout` - Cerrar Sesión
-- **Descripción:**  
-  Cierra la sesión del usuario eliminando los datos guardados en la sesión y redirige a la página de login.
-- **Método HTTP:** GET
-- **Respuesta:** Redirige a `/`.
+### `/logout`
+- **Método:** `GET`
+- **Descripción:** Cierra la sesión actual del usuario y redirige al inicio (`/`).
 
 ---
 
-### POST `/register` - Registro de Usuario
-- **Descripción:**  
-  Registra un nuevo usuario recibiendo datos del formulario (nombre, email, contraseña, biografía).  
-  Si el registro es exitoso, redirige a la página de login; en caso de error, renderiza `login.html` con un mensaje de error.
-- **Método HTTP:** POST
+### `/register`
+- **Métodos:** `GET`, `POST`
+- **GET:** Muestra el formulario de registro (`register.html`).
+- **POST:** Procesa el formulario de registro:
+  - Recibe `nombre_usuario`, `email`, `contraseña` y `biografia`.
+  - Intenta registrar al usuario con `UsuariosDAO`.
+  - Si tiene éxito, redirige al login (`/`).
+  - Si falla, muestra un error en el mismo formulario.
 
 ---
 
-## Endpoints de Gestión de Proyectos
-
-### GET `/home` - Página Principal
-- **Descripción:**  
-  Muestra la página principal del usuario autenticado, listando sus proyectos.  
-  Si el usuario no está autenticado, se redirige a la página de login.
-- **Método HTTP:** GET
-- **Respuesta:** Renderiza `home.html` con la lista de proyectos obtenida a partir del ID de usuario almacenado en sesión.
-
----
-
-### POST `/home/create_project` - Crear Proyecto
-- **Descripción:**  
-  Permite la creación de un nuevo proyecto. Recibe datos como nombre, descripción y visibilidad del proyecto a través de un formulario.  
-  Asocia el proyecto al usuario en sesión.  
-  Redirige a `/home` si la creación es exitosa; en caso contrario, muestra un mensaje de error en la misma plantilla.
-- **Método HTTP:** POST
+### `/home/add_project`
+- **Métodos:** `GET`, `POST`
+- **GET:** Muestra el formulario para crear un nuevo proyecto (`add_project.html`).
+- **POST:** Procesa la creación del proyecto:
+  - Recibe `nombre`, `descripcion`, `visibilidad`.
+  - Obtiene el `user_id` de la sesión como `id_usuario`.
+  - Intenta guardar el proyecto con `ProyectosDAO`.
+  - Si tiene éxito, redirige a `/home`.
+  - Si falla, muestra un error en el formulario.
 
 ---
 
-### GET `/home/edit_project/<int:project_id>` - Editar Proyecto
-- **Descripción:**  
-  Muestra el formulario para editar un proyecto específico.  
-  Requiere que el usuario esté autenticado y utiliza el ID del proyecto para obtener la información actual que será editada.
-- **Método HTTP:** GET
-- **Respuesta:** Renderiza `edit_project.html` con los detalles del proyecto.
+### `/home/edit_project/<int:project_id>`
+- **Métodos:** `GET`, `POST`
+- **GET:** Muestra el formulario de edición para un proyecto existente.
+  - Recupera los datos del proyecto por `id` y los muestra en `edit_project.html`.
+- **POST:** Procesa la actualización del proyecto:
+  - Recibe `nombre`, `descripcion`, `visibilidad`.
+  - Actualiza el proyecto en la base de datos.
+  - Si tiene éxito, redirige a `/home`.
+  - Si falla, muestra un mensaje de error.
 
 ---
 
-### POST `/home/update_project/<int:project_id>` - Actualizar Proyecto
-- **Descripción:**  
-  Actualiza la información del proyecto basándose en los datos enviados desde el formulario de edición (nombre, descripción, visibilidad).  
-  Redirige a `/home` si la actualización es exitosa; en caso contrario, devuelve un mensaje de error.
-- **Método HTTP:** POST
+### `/home/delete_project/<int:project_id>`
+- **Método:** `GET`
+- **Descripción:** Elimina el proyecto con el ID dado.
+  - Si se elimina correctamente, redirige a `/home`.
+  - Si ocurre un error, muestra la página principal con un mensaje de error.
 
 ---
 
-### GET `/home/delete_project/<int:project_id>` - Eliminar Proyecto
-- **Descripción:**  
-  Elimina un proyecto utilizando su ID.  
-  Redirige a `/home` si la eliminación es exitosa; de lo contrario, muestra un error.
-- **Método HTTP:** GET
-
----
-
-### GET `/home/view_project/<int:project_id>` - Ver Detalles del Proyecto
-- **Descripción:**  
-  Muestra la vista detallada de un proyecto, incluyendo:
+### `/home/view_project/<int:project_id>`
+- **Método:** `GET`
+- **Descripción:** Muestra los detalles del proyecto:
   - Información del proyecto.
-  - Comentarios relacionados.
-  - Archivos asociados.
-  - Colaboradores del proyecto.  
-  Requiere que el usuario esté autenticado.
-- **Método HTTP:** GET
-- **Respuesta:** Renderiza `project.html` con todos los datos del proyecto.
+  - Comentarios.
+  - Archivos.
+  - Colaboradores.
+- Solo accesible si hay una sesión activa. Si no, redirige a `/`.
 
 ---
 
-## Notas Adicionales
-
-- **Manejo de la Sesión:**  
-  Los datos del usuario se almacenan en la sesión para mantener el estado de autenticación entre las solicitudes.
-
-- **Acceso a la Base de Datos:**  
-  La lógica de acceso a datos se implementa a través de distintos DAOs (e.g., `UsuariosDAO`, `ProyectosDAO`, etc.) para mantener una separación de responsabilidades.
-
-- **Seguridad:**  
-  Se recomienda siempre validar y sanitizar los datos del usuario. La autenticación se realiza utilizando funciones de hash seguras para la contraseña.
-
-
+## Notas
+- La mayoría de los endpoints requieren sesión activa.
+- Las respuestas son vistas HTML renderizadas con Jinja2.
+- La autenticación de usuarios y manejo de proyectos está encapsulado en DAOs.

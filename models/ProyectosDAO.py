@@ -11,7 +11,7 @@ CREATE TABLE Proyectos (
 );
 """
 
-class ProyectosDao:
+class ProyectosDAO:
     def __init__(self, connection):
         self.connection = connection
         self.cursor = connection.cursor()

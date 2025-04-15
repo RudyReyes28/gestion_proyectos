@@ -12,7 +12,7 @@ CREATE TABLE Archivos (
 );
 """
 
-class ArchivosDao:
+class ArchivosDAO:
     def __init__(self, connection):
         self.connection = connection
         self.cursor = connection.cursor()

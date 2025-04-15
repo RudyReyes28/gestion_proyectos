@@ -14,7 +14,7 @@ CREATE TABLE Comentarios (
 );
 """
 
-class ComentariosDao:
+class ComentariosDAO:
     def __init__(self, connection):
         self.connection = connection
         self.cursor = connection.cursor()
