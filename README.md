@@ -15,8 +15,8 @@ Desarrollar una plataforma web de gestión de proyectos que permita a los usuari
 ### Gestión de Usuarios
 
 - Registro e inicio de sesión de usuarios  
-- Perfil de usuario editable (nombre, foto, biografía)  
-- Cambio de contraseña y recuperación de cuenta  
+- Perfil de usuario editable (nombre, biografía)  
+- Cambio de contraseña
 
 ### Gestión de Proyectos
 
