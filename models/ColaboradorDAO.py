@@ -10,7 +10,7 @@ CREATE TABLE Colaboradores (
 """
 
 
-class ColaboradoresDao:
+class ColaboradorDAO:
     def __init__(self, connection):
         self.connection = connection
         self.cursor = connection.cursor()

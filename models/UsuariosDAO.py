@@ -12,8 +12,8 @@ CREATE TABLE Usuarios (
 """
 
 
-class UsuariosDao:
-    def __init___ (self, connection):
+class UsuariosDAO:
+    def __init__ (self, connection):
         self.connection = connection
         self.cursor = connection.cursor()
     
