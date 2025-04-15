@@ -138,6 +138,4 @@ La lógica de negocio se encuentra encapsulada en varios Data Access Objects (DA
 - **Seguridad:**  
   Se recomienda siempre validar y sanitizar los datos del usuario. La autenticación se realiza utilizando funciones de hash seguras para la contraseña.
 
----
 
-Esta documentación te servirá para que tú y tu colaborador tengan una referencia clara de la funcionalidad de cada endpoint y cómo interactúa la aplicación con la base de datos y la sesión de usuario.
