@@ -1,11 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <title>Registro</title>
 </head>
-<body>
-    
+<body class="bg-gray-200 flex items-center justify-center min-h-screen">
+  <div class="bg-white p-6 rounded-md shadow-md w-11/12 sm:w-3/4 md:w-1/2 lg:w-1/3">
+    <form method="POST" class="w-full">
+      <h2 class="text-2xl font-bold mb-6 text-center text-blue-600">Crear cuenta</h2>
+
+      <!-- Nombre de usuario -->
+      <label for="nombre_usuario" class="block font-medium mb-1">Nombre de usuario:</label>
+      <input type="text" id="nombre_usuario" name="nombre_usuario" class="w-full p-2 border border-gray-300 rounded-md mb-4" placeholder="Ej. usuario*" required>
+
+      <!-- Email -->
+      <label for="email" class="block font-medium mb-1">Correo electrónico:</label>
+      <input type="email" id="email" name="email" class="w-full p-2 border border-gray-300 rounded-md mb-4" placeholder="Ej. user@example.com*" required>
+
+      <!-- Contraseña -->
+      <label for="contraseña" class="block font-medium mb-1">Contraseña:</label>
+      <input type="password" id="contraseña" name="contraseña" class="w-full p-2 border border-gray-300 rounded-md mb-4" placeholder="Contraseña segura*" required>
+
+      <!-- Biografía -->
+      <label for="biografia" class="block font-medium mb-1">Biografía:</label>
+      <textarea id="biografia" name="biografia" rows="3" class="w-full p-2 border border-gray-300 rounded-md mb-4" placeholder="Cuéntanos algo sobre ti...*"></textarea>
+
+      <!-- Botón de registro -->
+      <button type="submit" class="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition duration-200">
+        Registrarse
+      </button>
+
+      <!-- Link a login -->
+      <p class="text-center mt-4 text-sm">
+        ¿Ya tienes una cuenta?
+        <a href="/login" class="text-blue-600 hover:underline font-semibold">Inicia sesión aquí</a>
+      </p>
+
+      <!-- Error (si aplica) -->
+      <p class="text-red-500 font-semibold italic mt-4 text-center">{{error}}</p>
+    </form>
+  </div>
 </body>
 </html>

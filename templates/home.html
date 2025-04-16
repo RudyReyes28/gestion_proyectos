@@ -1,11 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <title>Inicio</title>
 </head>
-<body>
-    
+<body class="bg-gray-100 min-h-screen flex flex-col">
+  
+  <!-- Navbar -->
+  <header class="bg-blue-600 text-white shadow-md">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-xl font-bold">Gestión de Proyectos</h1>
+      <nav>
+        <ul class="flex space-x-4">
+          <li><a href="/home" class="hover:underline">Proyectos</a></li>
+          <li><a href="/logout" class="hover:underline">Cerrar sesión</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Contenido principal -->
+  <main class="flex-grow container mx-auto px-4 py-10">
+    <h2 class="text-3xl font-bold mb-4 text-blue-700">¡Bienvenido, {{session["nombre_usuario"]}}!</h2>
+
+        <div class="max-w-6xl mx-auto bg-white p-6 rounded-md shadow-md">
+          <h2 class="text-2xl font-bold mb-6 text-center text-blue-700">Listado de Proyectos</h2>
+      
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-300">
+              <thead class="bg-blue-500 text-white">
+                <tr>
+                  <th class="px-4 py-3 text-left text-sm font-semibold uppercase">Nombre</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold uppercase">Descripción</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold uppercase">Visibilidad</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold uppercase">ID del Creador</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold uppercase">Acciones</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <!-- Fila de ejemplo -->
+                 {% for proyecto in proyectos %}
+                <tr>
+                  <td class="px-4 py-3">{{ proyecto.nombre }}</td>
+                  <td class="px-4 py-3">{{ proyecto.descripcion }}</td>
+                  <td class="px-4 py-3">{{ proyecto.visibilidad }}</td>
+                  <td class="px-4 py-3">{{ proyecto.id_creador }}</td>
+                  <td class="px-4 py-3">
+                    <button class="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-700 mr-2">
+                      Editar
+                    </button>
+                    <button class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-700">
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+                {% endfor %}
+                <!-- Puedes repetir las filas dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-blue-600 text-white text-center py-4">
+    &copy; 2025 Gestion de Proyectos. Todos los derechos reservados Rudy Reyes y Douglas Gómez.
+  </footer>
 </body>
 </html>

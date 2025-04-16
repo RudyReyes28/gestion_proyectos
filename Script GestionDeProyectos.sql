@@ -13,6 +13,10 @@ CREATE TABLE Usuarios (
     biografia NVARCHAR(500) NULL
 );
 
+INSERT INTO Usuarios (nombre_usuario, email, contraseña, biografia) VALUES
+('juan1', 'user1@example.com', 'scrypt:32768:8:1$CoAKVlX3eG3TCxlg$3ed4a451e10a89b6739c4fced17d0c0efd435fa241f2b535c9102d225956acbcd108618b8f8b805b1335f2851984e62ef188b5ff1f2e4375a0dff724fcbd0ed7', 'Amante de la tecnología y los videojuegos.'),
+('juan2', 'user2@example.com', 'scrypt:32768:8:1$CoAKVlX3eG3TCxlg$3ed4a451e10a89b6739c4fced17d0c0efd435fa241f2b535c9102d225956acbcd108618b8f8b805b1335f2851984e62ef188b5ff1f2e4375a0dff724fcbd0ed7', 'Estudiante de informática.');
+
 -- Tabla de Proyectos
 CREATE TABLE Proyectos (
     id INT PRIMARY KEY IDENTITY(1,1),
@@ -23,6 +27,13 @@ CREATE TABLE Proyectos (
     id_creador INT NOT NULL,
     FOREIGN KEY (id_creador) REFERENCES Usuarios(id)
 );
+
+INSERT INTO Proyectos (nombre, descripcion, visibilidad, id_creador) VALUES
+('Sistema de Inventario', 'Aplicación web para gestionar el inventario de una tienda.', 'publico', 7),
+('Blog Personal', 'Blog para compartir artículos sobre programación.', 'privado', 7),
+('Gestor de Tareas', 'Proyecto colaborativo para manejar tareas de equipo.', 'publico', 7),
+('Plataforma de Cursos', 'Sitio para ofrecer cursos en línea.', 'privado', 7),
+('Portafolio Profesional', NULL, 'publico', 7);
 
 -- Tabla de Archivos
 CREATE TABLE Archivos (
