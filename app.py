@@ -54,14 +54,17 @@ def home():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        nombre_usuario = request.form["nombre_usuario"]
+        email = request.form["correo"]
         contraseña = request.form["contraseña"]
-        user = usuariosDao.get_user_by_username(nombre_usuario)
-        if user and user[3] == contraseña:
+
             session["user_id"] = user[0]
+            session["nombre_usuario"] = user[1]
+            session["email"] = user[2]
+            session["fecha_registro"] = user[4]
+            session["biografia"] = user[5]
             return redirect(url_for("home"))
         else:
-            error = "Invalid username or password"
+            error = "Invalid credentials"
             return render_template("login.html", error=error)
     return render_template("login.html")
 
