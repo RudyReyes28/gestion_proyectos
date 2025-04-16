@@ -19,7 +19,8 @@ class UsuariosDAO:
     
     def create_user(self, nombre_usuario, email, contraseña, biografia=None):
         query = "INSERT INTO Usuarios (nombre_usuario, email, contraseña, biografia) VALUES (?, ?, ?, ?)"
-        self.cursor.execute(query, (nombre_usuario, email, contraseña, biografia))
+        password_hash = generate_password_hash(contraseña)
+        self.cursor.execute(query, (nombre_usuario, email, password_hash, biografia))
         self.connection.commit()
         return self.cursor.rowcount > 0
     

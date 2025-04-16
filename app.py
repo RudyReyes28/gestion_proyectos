@@ -15,9 +15,6 @@ db_user = os.environ.get('DB_USER')
 db_password = os.environ.get('DB_PASSWORD')
 db_driver = os.environ.get('DB_DRIVER')
 
-print(f"DB_HOST: {db_host}")
-print(f"DB_NAME: {db_name}")
-
 #conexion = Conexion()
 conn_str = (
     f"Driver={db_driver};"
@@ -41,7 +38,7 @@ app.secret_key = 'clave_super_secreta'
 
 @app.route("/")
 def index():
-    return render_template("login.html")
+    return redirect(url_for("login"))
 
 @app.route("/home")
 def home():

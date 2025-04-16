@@ -1,23 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <title>Login</title>
 </head>
-<body>
-    <div class="bg-blue-200 p-6 rounded-md shadow-md mx-auto w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 flex justify-center items-center h-auto mt-20">
-        <form method="POST">
+<body class="bg-gray-200 flex items-center justify-center min-h-screen">
+    <div class="bg-blue-300 p-6 rounded-md shadow-md mx-auto w-1/2 md:w-1/3 lg:w-1/4 flex justify-center items-center">
+        <form method="POST" class="w-full">
             <h2 class="text-2xl font-bold mb-4 text-center">Iniciar sesión</h2>
-          <label for="nombre_usuario">Nombre de usuario:</label>
-          <input type="text" id="nombre_usuario" name="nombre_usuario" class="block w-full p-2 border-gray-300 rounded-md" placeholder="Usuario">
-          <br>
-          <label for="contraseña">Contraseña:</label>
-          <input type="password" id="contraseña" name="contraseña" class="block w-full p-2 border-gray-300 rounded-md" placeholder="contraseña">
-          <br>
-          <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md">Iniciar sesión</button>
+            
+            <label for="nombre_usuario" class="block font-medium mb-1">Correo:</label>
+            <input type="email" id="nombre_usuario" name="correo" class="block w-full p-2 border border-gray-300 rounded-md mb-4" placeholder="Correo*" required>
+
+            <label for="contraseña" class="block font-medium mb-1">Contraseña:</label>
+            <input type="password" id="contraseña" name="contraseña" class="block w-full p-2 border border-gray-300 rounded-md mb-4" placeholder="Contraseña*" required>
+
+            <button type="submit" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md">Iniciar sesión</button>
+
+            <p class="text-red-500 font-semibold italic mt-4 text-center">{{error}}</p>
+
+                        <!-- Enlace para registrarse -->
+                        <p class="text-center mt-6 text-sm">
+                          ¿No tienes cuenta?
+                          <a href="/register" class="text-blue-900 hover:underline font-semibold">Regístrate aquí</a>
+                      </p>
         </form>
-      </div>
+    </div>
 </body>
 </html>
