@@ -57,6 +57,8 @@ def login():
         email = request.form["correo"]
         contraseña = request.form["contraseña"]
 
+        user = usuariosDao.authenticate_user(email, contraseña)
+        if user:
             session["user_id"] = user[0]
             session["nombre_usuario"] = user[1]
             session["email"] = user[2]
