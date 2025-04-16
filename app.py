@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session
+import os, dotenv
 import pyodbc
 from models.Conexion import Conexion
 from models.ArchivosDAO import ArchivosDAO
@@ -7,14 +8,25 @@ from models.ComentariosDAO import ComentariosDAO
 from models.ProyectosDAO import ProyectosDAO
 from models.UsuariosDAO import UsuariosDAO
 
+dotenv.load_dotenv()
+db_host = os.environ.get('DB_HOST')
+db_name = os.environ.get('DB_NAME')
+db_user = os.environ.get('DB_USER')
+db_password = os.environ.get('DB_PASSWORD')
+db_driver = os.environ.get('DB_DRIVER')
+
+print(f"DB_HOST: {db_host}")
+print(f"DB_NAME: {db_name}")
+
 #conexion = Conexion()
 conn_str = (
-            "Driver={ODBC Driver 17 for SQL Server};"
-            "Server=DESKTOP-OAP2EF6;"
-            "Database=GestionProyectos;"
-            'UID=Alessandro;'
-            'PWD=1234'
-        )
+    f"Driver={db_driver};"
+    f"Server={db_host};"
+    f"Database={db_name};"
+    f"UID={db_user};"
+    f"PWD={db_password}"
+)
+
 conexion = pyodbc.connect(conn_str)
 archivosDao = ArchivosDAO(conexion)
 colaboradorDao = ColaboradorDAO(conexion)
@@ -44,9 +56,7 @@ def login():
     if request.method == "POST":
         nombre_usuario = request.form["nombre_usuario"]
         contraseña = request.form["contraseña"]
-        
         user = usuariosDao.get_user_by_username(nombre_usuario)
-        
         if user and user[3] == contraseña:
             session["user_id"] = user[0]
             return redirect(url_for("home"))
