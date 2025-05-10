@@ -154,7 +154,8 @@ def view_project(project_id):
         comentarios = comentariosDao.get_comments_by_project(project_id)
         archivos = archivosDao.get_files_by_project(project_id)
         colaboradores = colaboradorDao.get_collaborators_by_project(project_id)
-        return render_template("project.html", project=project, comentarios=comentarios, archivos=archivos, colaboradores=colaboradores)
+        tipos_archivo = TipoArchivoDao.get_all()
+        return render_template("project.html", project=project, comentarios=comentarios, archivos=archivos, colaboradores=colaboradores, tipos_archivo=tipos_archivo)
     else:
         return redirect(url_for("index"))
 
