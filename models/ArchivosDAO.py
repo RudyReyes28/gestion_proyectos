@@ -26,8 +26,7 @@ class ArchivosDAO:
         self.connection.commit()
         return self.cursor.rowcount > 0
     
-
-
+    
     def update_file(self, file_id, nombre=None, contenido=None):
         query = "UPDATE Archivos SET "
         params = []

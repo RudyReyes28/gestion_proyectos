@@ -1,70 +1,167 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <title>Inicio</title>
-</head>
-<body class="bg-gray-100 min-h-screen flex flex-col">
-  
-  <!-- Navbar -->
-  <header class="bg-blue-600 text-white shadow-md">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-      <h1 class="text-xl font-bold">Gestión de Proyectos</h1>
-      <nav>
-        <ul class="flex space-x-4">
-          <li><a href="/home" class="hover:underline">Proyectos</a></li>
-          <li><a href="/logout" class="hover:underline">Cerrar sesión</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
+{% extends "base.html" %}
 
-  <!-- Contenido principal -->
-  <main class="flex-grow container mx-auto px-4 py-10">
-    <h2 class="text-3xl font-bold mb-4 text-blue-700">¡Bienvenido, {{session["nombre_usuario"]}}!</h2>
+{% block title %}CodeShare - Inicio{% endblock %}
 
-        <div class="max-w-6xl mx-auto bg-white p-6 rounded-md shadow-md">
-          <h2 class="text-2xl font-bold mb-6 text-center text-blue-700">Listado de Proyectos</h2>
-      
-          <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-300">
-              <thead class="bg-blue-500 text-white">
-                <tr>
-                  <th class="px-4 py-3 text-left text-sm font-semibold uppercase">Nombre</th>
-                  <th class="px-4 py-3 text-left text-sm font-semibold uppercase">Descripción</th>
-                  <th class="px-4 py-3 text-left text-sm font-semibold uppercase">Visibilidad</th>
-                  <th class="px-4 py-3 text-left text-sm font-semibold uppercase">Acciones</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <!-- Fila de ejemplo -->
-                 {% for proyecto in proyectos %}
-                <tr>
-                  <td class="px-4 py-3">{{ proyecto.nombre }}</td>
-                  <td class="px-4 py-3">{{ proyecto.descripcion }}</td>
-                  <td class="px-4 py-3">{{ proyecto.visibilidad }}</td>
-                  <td class="px-4 py-3">
-                    <button class="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-700 mr-2">
-                      Editar
-                    </button>
-                    <button class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-700">
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-                {% endfor %}
-                <!-- Puedes repetir las filas dinámicamente -->
-              </tbody>
-            </table>
-          </div>
+{% block extra_css %}
+.card {
+    transition: transform 0.3s;
+    height: 100%;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+.project-card {
+    margin-bottom: 20px;
+}
+.card-footer {
+    background-color: white;
+    border-top: none;
+    padding-top: 0;
+}
+.nav-tabs {
+    margin-bottom: 20px;
+}
+.badge {
+    font-size: 0.75rem;
+}
+.project-description {
+    height: 80px;
+    overflow: hidden;
+}
+.project-actions {
+    text-align: right;
+}
+.project-date {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+.empty-state {
+    text-align: center;
+    padding: 40px 0;
+}
+.empty-state i {
+    font-size: 50px;
+    color: #dee2e6;
+    margin-bottom: 20px;
+}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="mb-4">Bienvenido, {{ session.nombre_usuario }}</h2>
+        
+        {% if error %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
         </div>
-  </main>
+        {% endif %}
 
-  <!-- Footer -->
-  <footer class="bg-blue-600 text-white text-center py-4">
-    &copy; 2025 Gestion de Proyectos. Todos los derechos reservados Rudy Reyes y Douglas Gómez.
-  </footer>
-</body>
-</html>
+        <ul class="nav nav-tabs" id="projectTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="mis-proyectos-tab" data-bs-toggle="tab" data-bs-target="#mis-proyectos" type="button" role="tab" aria-controls="mis-proyectos" aria-selected="true">
+                    Mis Proyectos
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="colaborativos-tab" data-bs-toggle="tab" data-bs-target="#colaborativos" type="button" role="tab" aria-controls="colaborativos" aria-selected="false">
+                    Proyectos Colaborativos
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="publicos-tab" data-bs-toggle="tab" data-bs-target="#publicos" type="button" role="tab" aria-controls="publicos" aria-selected="false">
+                    Proyectos Públicos
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="projectTabsContent">
+            <!-- Mis Proyectos -->
+            <div class="tab-pane fade show active" id="mis-proyectos" role="tabpanel" aria-labelledby="mis-proyectos-tab">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3>Mis Proyectos</h3>
+                    <a href="{{ url_for('add_project') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Nuevo Proyecto
+                    </a>
+                </div>
+                
+                {% if proyectos|length > 0 %}
+                <div class="row">
+                    {% for proyecto in proyectos %}
+                    <div class="col-md-4 project-card">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ proyecto.nombre }}</h5>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="badge bg-{{ 'success' if proyecto[4] == 'publico' else 'secondary' }}">{{ proyecto[4] }}</span>
+                                    <span class="project-date">Creado: {{ proyecto[3].strftime('%d/%m/%Y') }}</span>
+                                </div>
+                                <p class="card-text project-description">{{ proyecto[2] }}</p>
+                            </div>
+                            <div class="card-footer">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ url_for('view_project', project_id=proyecto[0]) }}" class="btn btn-sm btn-outline-primary">Ver Proyecto</a>
+                                    <div>
+                                        <a href="{{ url_for('edit_project', project_id=proyecto[0]) }}" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('delete_project', project_id=proyecto[0]) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Estás seguro de eliminar este proyecto?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-folder-open"></i>
+                    <h4>No tienes proyectos aún</h4>
+                    <p>Comienza creando tu primer proyecto</p>
+                    <a href="{{ url_for('add_project') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Crear Proyecto
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Proyectos Colaborativos -->
+            <div class="tab-pane fade" id="colaborativos" role="tabpanel" aria-labelledby="colaborativos-tab">
+                <h3 class="mb-4">Proyectos Colaborativos</h3>
+                
+                <div class="empty-state">
+                    <i class="fas fa-users"></i>
+                    <h4>No tienes proyectos colaborativos</h4>
+                    <p>Aquí aparecerán los proyectos en los que seas colaborador</p>
+                </div>
+            </div>
+            
+            <!-- Proyectos Públicos -->
+            <div class="tab-pane fade" id="publicos" role="tabpanel" aria-labelledby="publicos-tab">
+                <h3 class="mb-4">Proyectos Públicos</h3>
+                
+                <div class="empty-state">
+                    <i class="fas fa-globe"></i>
+                    <h4>No hay proyectos públicos disponibles</h4>
+                    <p>Aquí aparecerán los proyectos públicos de otros usuarios</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Activar tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    });
+</script>
+{% endblock %}

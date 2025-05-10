@@ -151,10 +151,10 @@ def delete_project(project_id):
 def view_project(project_id):
     if "user_id" in session:
         project = proyectosDao.get_project_by_id(project_id)
-        comentarios = comentariosDao.get_comments_by_project(project_id)
-        archivos = archivosDao.get_files_by_project(project_id)
-        colaboradores = colaboradorDao.get_collaborators_by_project(project_id)
-        tipos_archivo = TipoArchivoDao.get_all()
+        comentarios = comentariosDao.get_comment_by_project_id(project_id)
+        archivos = archivosDao.get_files_by_project_id(project_id)
+        colaboradores = colaboradorDao.get_users_by_project_id(project_id)
+        tipos_archivo = TipoArchivoDao.get_all_file_types()
         return render_template("project.html", project=project, comentarios=comentarios, archivos=archivos, colaboradores=colaboradores, tipos_archivo=tipos_archivo)
     else:
         return redirect(url_for("index"))
@@ -167,7 +167,7 @@ def add_file(project_id):
         id_usuario = session["user_id"]
         id_proyecto = project_id
         tipo_archivo = request.form["tipo_archivo"]
-        sucess = archivosDao.create_file(nombre, id_usuario, id_proyecto, tipo_archivo)
+        sucess = archivosDao.create_file(nombre, id_proyecto, id_usuario, tipo_archivo)
         if sucess:
             return redirect(url_for("view_project", project_id=project_id))
         else:
@@ -182,8 +182,9 @@ def edit_file(file_id):
     if request.method == "POST":
         project_id = request.form["project_id"]
         contenido = request.form["contenido"]
+        id_usuario = session["user_id"]
         
-        if archivosDao.update_file(file_id, contenido):
+        if archivosDao.update_content(file_id, contenido, id_usuario):
             return redirect(url_for("view_project", project_id=project_id))
         else:
             error = "Error updating file"
