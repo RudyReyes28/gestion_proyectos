@@ -1,5 +1,4 @@
 """
--- Tabla de Archivos
 CREATE TABLE Archivos (
     id INT PRIMARY KEY IDENTITY(1,1),
     nombre NVARCHAR(255) NOT NULL,
@@ -7,21 +6,27 @@ CREATE TABLE Archivos (
     ultima_modificacion DATETIME DEFAULT GETDATE(),
     id_proyecto INT NOT NULL,
     id_usuario_modificador INT NOT NULL,
+    id_tipo_archivo INT NOT NULL,
+    FOREIGN KEY (id_tipo_archivo) REFERENCES Tipo_Archivo(id),
     FOREIGN KEY (id_proyecto) REFERENCES Proyectos(id),
-    FOREIGN KEY (id_usuario_modificador) REFERENCES Usuarios(id)
+    FOREIGN KEY (id_usuario_modificador) REFERENCES Usuarios(id),
 );
+
 """
+
 
 class ArchivosDAO:
     def __init__(self, connection):
         self.connection = connection
         self.cursor = connection.cursor()
 
-    def create_file(self, nombre, contenido, id_proyecto, id_usuario_modificador):
-        query = "INSERT INTO Archivos (nombre, contenido, id_proyecto, id_usuario_modificador) VALUES (?, ?, ?, ?)"
-        self.cursor.execute(query, (nombre, contenido, id_proyecto, id_usuario_modificador))
+    def create_file(self, nombre, id_proyecto, id_usuario_modificador, id_tipo_archivo):
+        query = "INSERT INTO Archivos (nombre, id_proyecto, id_usuario_modificador, id_tipo_archivo) VALUES (?, ?, ?, ?)"
+        self.cursor.execute(query, (nombre, id_proyecto, id_usuario_modificador, id_tipo_archivo))
         self.connection.commit()
         return self.cursor.rowcount > 0
+    
+
 
     def update_file(self, file_id, nombre=None, contenido=None):
         query = "UPDATE Archivos SET "

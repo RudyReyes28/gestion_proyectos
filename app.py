@@ -157,6 +157,46 @@ def view_project(project_id):
         return redirect(url_for("index"))
 
 
+@app.route("/home/view_project/new_file/<int:project_id>", methods=["POST"])
+def add_file(project_id):
+    if request.method == "POST":
+        nombre = request.form["nombre"]
+        id_usuario = session["user_id"]
+        id_proyecto = project_id
+        tipo_archivo = request.form["tipo_archivo"]
+        sucess = archivosDao.create_file(nombre, id_usuario, id_proyecto, tipo_archivo)
+        if sucess:
+            return redirect(url_for("view_project", project_id=project_id))
+        else:
+            error = "Error creating file"
+            return render_template("project.html", error=error)
+    else:
+        return redirect(url_for("view_project", project_id=project_id))
+
+
+@app.route("/home/view_project/edit_file/<int:file_id>", methods=["POST"])
+def edit_file(file_id):
+    if request.method == "POST":
+        project_id = request.form["project_id"]
+        contenido = request.form["contenido"]
+        
+        if archivosDao.update_file(file_id, contenido):
+            return redirect(url_for("view_project", project_id=project_id))
+        else:
+            error = "Error updating file"
+            return render_template("project.html", error=error)
+    else:
+        return redirect(url_for("view_project", project_id=project_id))
+    
+@app.route("/home/view_project/delete_file/<int:file_id>", methods=["POST"])
+def delete_file(file_id):
+    project_id = request.form["project_id"]
+    if archivosDao.delete_file(file_id):
+        return redirect(url_for("view_project", project_id=project_id))
+    else:
+        error = "Error deleting file"
+        return render_template("project.html", error=error)
+
 
 
 if __name__ == "__main__":
