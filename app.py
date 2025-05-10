@@ -7,6 +7,7 @@ from models.ColaboradorDAO import ColaboradorDAO
 from models.ComentariosDAO import ComentariosDAO
 from models.ProyectosDAO import ProyectosDAO
 from models.UsuariosDAO import UsuariosDAO
+from models.TipoArchivoDAO import TipoArchivoDAO
 
 dotenv.load_dotenv()
 db_host = os.environ.get('DB_HOST')
@@ -30,6 +31,7 @@ colaboradorDao = ColaboradorDAO(conexion)
 comentariosDao = ComentariosDAO(conexion)
 proyectosDao = ProyectosDAO(conexion)
 usuariosDao = UsuariosDAO(conexion)
+TipoArchivoDao = TipoArchivoDAO(conexion)
 
 
 app = Flask(__name__)
