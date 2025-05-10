@@ -35,6 +35,21 @@ INSERT INTO Proyectos (nombre, descripcion, visibilidad, id_creador) VALUES
 ('Plataforma de Cursos', 'Sitio para ofrecer cursos en línea.', 'privado', 7),
 ('Portafolio Profesional', NULL, 'publico', 7);
 
+CREATE TABLE Tipo_Archivo(
+    id INT PRIMARY KEY IDENTITY(1,1),
+    nombre NVARCHAR(50) NOT NULL UNIQUE,
+    extension NVARCHAR(10) NOT NULL UNIQUE
+);
+
+INSERT INTO Tipo_Archivo (nombre, extension) VALUES
+('Python', '.py'),
+('JavaScript', '.js'),
+('HTML', '.html'),
+('CSS', '.css'),
+('SQL', '.sql'),
+('Markdown', '.md'),
+('Texto Plano', '.txt');
+
 -- Tabla de Archivos
 CREATE TABLE Archivos (
     id INT PRIMARY KEY IDENTITY(1,1),
@@ -43,8 +58,10 @@ CREATE TABLE Archivos (
     ultima_modificacion DATETIME DEFAULT GETDATE(),
     id_proyecto INT NOT NULL,
     id_usuario_modificador INT NOT NULL,
+    id_tipo_archivo INT NOT NULL,
+    FOREIGN KEY (id_tipo_archivo) REFERENCES Tipo_Archivo(id),
     FOREIGN KEY (id_proyecto) REFERENCES Proyectos(id),
-    FOREIGN KEY (id_usuario_modificador) REFERENCES Usuarios(id)
+    FOREIGN KEY (id_usuario_modificador) REFERENCES Usuarios(id),
 );
 
 -- Tabla de Versiones de Archivos
@@ -54,8 +71,8 @@ CREATE TABLE Versiones_Archivo (
     contenido NVARCHAR(MAX) NULL,
     fecha_version DATETIME DEFAULT GETDATE(),
     id_usuario INT NOT NULL,
-    FOREIGN KEY (id_archivo) REFERENCES Archivos(id),
-    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id)
+    FOREIGN KEY (id_archivo) REFERENCES Archivos(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id) ON DELETE CASCADE
 );
 
 -- Tabla de Colaboradores

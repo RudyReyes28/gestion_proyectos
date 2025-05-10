@@ -89,7 +89,17 @@ def register():
     
 
 #manejo de proyectos
-@app.route("/home/add_project", methods=["GET","POST"])
+@app.route("/home/my_projects")
+def my_projects():
+    if "user_id" in session:
+        proyectos = proyectosDao.get_projects_by_user(session["user_id"])
+        return render_template("my_projects.html", proyectos=proyectos)
+    else:
+        return redirect(url_for("index"))
+    
+
+
+@app.route("/home/my_projects/add_project", methods=["GET","POST"])
 def add_project():
     if request.method == "POST":
         nombre = request.form["nombre"]
@@ -108,7 +118,7 @@ def add_project():
 
     
 
-@app.route("/home/edit_project/<int:project_id>", methods=["GET", "POST"])
+@app.route("/home/my_projects/edit_project/<int:project_id>", methods=["GET", "POST"])
 def edit_project(project_id):
     if request.method == "POST":
         nombre = request.form["nombre"]
@@ -124,7 +134,7 @@ def edit_project(project_id):
         project = proyectosDao.get_project_by_id(project_id)
         return render_template("edit_project.html", project=project)
     
-@app.route("/home/delete_project/<int:project_id>")
+@app.route("/home/delete_projects/<int:project_id>")
 def delete_project(project_id):
     if proyectosDao.delete_project(project_id):
         return redirect(url_for("home"))
@@ -133,6 +143,8 @@ def delete_project(project_id):
         return render_template("home.html", error=error)
 
 
+
+#VER PROYECTOS Y MANEJAR ARCHIVOS
 @app.route("/home/view_project/<int:project_id>")
 def view_project(project_id):
     if "user_id" in session:
@@ -143,6 +155,8 @@ def view_project(project_id):
         return render_template("project.html", project=project, comentarios=comentarios, archivos=archivos, colaboradores=colaboradores)
     else:
         return redirect(url_for("index"))
+
+
 
 
 if __name__ == "__main__":
