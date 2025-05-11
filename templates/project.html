@@ -205,6 +205,14 @@
     </div>
 </div>
 
+{%if error %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+
+
 <div class="project-container">
     <!-- Sidebar con archivos -->
     <div class="sidebar">
@@ -472,18 +480,19 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form>
+                <form method="POST" action="{{ url_for('add_collaborator', project_id=project[0]) }}">
                     <div class="mb-3">
                         <label for="collaboratorEmail" class="form-label">Correo Electrónico</label>
-                        <input type="email" class="form-control" id="collaboratorEmail" placeholder="correo@ejemplo.com">
+                        <input type="email" class="form-control" id="collaboratorEmail" name="collaborator_email"
+                            placeholder="correo@ejemplo.com">
+                    </div>
+            
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Invitar</button>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary">Invitar</button>
-            </div>
-        </div>
     </div>
 </div>
 {% endblock %}

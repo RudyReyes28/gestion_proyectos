@@ -153,9 +153,10 @@ def view_project(project_id):
         project = proyectosDao.get_project_by_id(project_id)
         comentarios = comentariosDao.get_comment_by_project_id(project_id)
         archivos = archivosDao.get_files_by_project_id(project_id)
-        colaboradores = colaboradorDao.get_users_by_project_id(project_id)
+        colaboradores = colaboradorDao.get_all_colaboradores_by_project(project_id)
         tipos_archivo = TipoArchivoDao.get_all_file_types()
-        return render_template("project.html", project=project, comentarios=comentarios, archivos=archivos, colaboradores=colaboradores, tipos_archivo=tipos_archivo)
+        error = request.args.get("error")
+        return render_template("project.html", project=project, comentarios=comentarios, archivos=archivos, colaboradores=colaboradores, tipos_archivo=tipos_archivo, error=error)
     else:
         return redirect(url_for("index"))
 
@@ -172,7 +173,7 @@ def add_file(project_id):
             return redirect(url_for("view_project", project_id=project_id))
         else:
             error = "Error creating file"
-            return render_template("project.html", error=error)
+            return redirect(url_for("view_project", project_id=project_id, error=error))
     else:
         return redirect(url_for("view_project", project_id=project_id))
 
@@ -188,7 +189,7 @@ def edit_file(file_id):
             return redirect(url_for("view_project", project_id=project_id))
         else:
             error = "Error updating file"
-            return render_template("project.html", error=error)
+            return redirect(url_for("view_project", project_id=project_id, error=error))
     else:
         return redirect(url_for("view_project", project_id=project_id))
     
@@ -199,9 +200,30 @@ def delete_file(file_id):
         return redirect(url_for("view_project", project_id=project_id))
     else:
         error = "Error deleting file"
-        return render_template("project.html", error=error)
+        return redirect(url_for("view_project", project_id=project_id))
 
 
+
+#COLABORADORES
+@app.route("/home/view_project/add_colaborator/<int:project_id>", methods=["POST"])
+def add_collaborator(project_id):
+    if request.method == "POST":
+        gmail_colaborador = request.form["collaborator_email"]
+        id_colaborador = usuariosDao.get_user_by_email(gmail_colaborador)
+        project_name = proyectosDao.get_project_by_id(project_id)[1]
+        if id_colaborador:
+            #revisar si el colaborador ya existe en el proyecto
+            colaborador_existente = colaboradorDao.get_content_project_by_colaborador(project_id, id_colaborador[0])
+            if colaborador_existente:
+                error = "Collaborator already exists in the project"
+                return redirect(url_for("view_project", project_id=project_id, error=error))
+            colaboradorDao.add_colaborator_gmail(project_id, gmail_colaborador, id_colaborador[0], project_name)
+            return redirect(url_for("view_project", project_id=project_id))
+        else:
+            error = "Error adding collaborator"
+            return redirect(url_for("view_project", project_id=project_id, error=error))
+    else:
+        return redirect(url_for("view_project", project_id=project_id))
 
 if __name__ == "__main__":
     app.run(debug=True)
