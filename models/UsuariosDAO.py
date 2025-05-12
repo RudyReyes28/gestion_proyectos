@@ -47,10 +47,20 @@ class UsuariosDAO:
         self.connection.commit()
         return self.cursor.rowcount > 0
     
-    def update_password(self, user_id, contraseña):
-        contraseña = generate_password_hash(contraseña)
+    def update_password(self, user_id, old_password, new_password, confirm_password):
+        if new_password != confirm_password:
+            return False
+        query = "SELECT contraseña FROM Usuarios WHERE id = ?"
+        self.cursor.execute(query, (user_id,))
+        user = self.cursor.fetchone()
+        if not user or not check_password_hash(user[0], old_password):
+            return False
+        if not new_password:
+            return False
+        
+        new_password = generate_password_hash(new_password)
         query = "UPDATE Usuarios SET contraseña = ? WHERE id = ?"
-        self.cursor.execute(query, (contraseña, user_id))
+        self.cursor.execute(query, (new_password, user_id))
         self.connection.commit()
         return self.cursor.rowcount > 0
     

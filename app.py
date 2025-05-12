@@ -409,5 +409,48 @@ def download_file_public(file_id):
         return redirect(url_for("index"))
 
 
+#MI PERFIL 
+@app.route("/home/profile", methods=["GET", "POST"])
+def profile():
+    if "user_id" in session:
+        if request.method == "POST":
+            nombre_usuario = request.form["nombre_usuario"]
+            email = request.form["email"]
+            biografia = request.form["biografia"]
+            contraseña = None
+            
+            if usuariosDao.update_user(session["user_id"], nombre_usuario, email, contraseña, biografia):
+                user = usuariosDao.get_user_by_id(session["user_id"])
+                if user:
+                    
+                    session["nombre_usuario"] = user[1]
+                    session["email"] = user[2]
+                    session["biografia"] = user[5]
+                    return redirect(url_for("home"))
+            else:
+                error = "Error updating profile"
+                return render_template("profile.html", error=error)
+        else:
+            user = usuariosDao.get_user_by_id(session["user_id"])
+            error = request.args.get("error")
+            return render_template("profile.html", user=user, error=error)
+    else:
+        return redirect(url_for("index"))
+
+@app.route("/home/profile/change_password", methods=["POST"])
+def change_password():
+    if "user_id" in session:
+        if request.method == "POST":
+            old_password = request.form["old_password"]
+            new_password = request.form["new_password"]
+            confirm_password = request.form["confirm_password"]
+            if usuariosDao.update_password(session["user_id"], old_password, new_password, confirm_password):
+                return redirect(url_for("home"))
+            else:
+                error = "Error updating password"
+                return redirect(url_for("profile", error=error))
+    else:
+        return redirect(url_for("index"))
+
 if __name__ == "__main__":
     app.run(debug=True)

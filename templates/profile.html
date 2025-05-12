@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}CodeShare - Mi Perfil{% endblock %}
+
+{% block extra_css %}
+.profile-header {
+    background-color: #f8f9fa;
+    padding: 30px 0;
+    margin-bottom: 30px;
+    border-radius: 8px;
+}
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: #6c757d;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    margin: 0 auto 15px;
+}
+.profile-section {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    padding: 25px;
+    margin-bottom: 25px;
+}
+.btn-change-password {
+    margin-top: 20px;
+}
+.profile-stats {
+    text-align: center;
+    padding: 15px 0;
+}
+.profile-stats .stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    display: block;
+}
+.profile-stats .stat-label {
+    color: #6c757d;
+    font-size: 14px;
+}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('home') }}">Inicio</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Mi Perfil</li>
+                </ol>
+            </nav>
+            
+            {% if error %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+            
+            {% if success %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ success }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Perfil principal -->
+        <div class="col-lg-8">
+            <div class="profile-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3>Información del Perfil</h3>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                        <i class="fas fa-edit"></i> Editar Perfil
+                    </button>
+                </div>
+                
+                <div class="profile-header text-center">
+                    <div class="profile-avatar">
+                        {{ session.nombre_usuario[0]|upper }}
+                    </div>
+                    <h2>{{ session.nombre_usuario }}</h2>
+                    <p class="text-muted">{{ session.email }}</p>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="profile-stats">
+                            <span class="stat-value">{{ proyectos|length if proyectos else 0 }}</span>
+                            <span class="stat-label">Proyectos</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="profile-stats">
+                            <span class="stat-value">{{ proyectos_colaborativos|length if proyectos_colaborativos else 0 }}</span>
+                            <span class="stat-label">Colaboraciones</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="profile-stats">
+                            <span class="stat-value">{{ archivos|length if archivos else 0 }}</span>
+                            <span class="stat-label">Archivos</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <h4>Biografía</h4>
+                <p>{{ session.biografia if session.biografia else "Aún no has añadido una biografía." }}</p>
+                
+                <div class="d-grid mt-4">
+                    <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                        <i class="fas fa-lock"></i> Cambiar Contraseña
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar con actividad reciente -->
+        <div class="col-lg-4">
+            <div class="profile-section">
+                <h4><i class="fas fa-history"></i> Actividad Reciente</h4>
+                <div class="list-group list-group-flush">
+                    {% if actividad %}
+                        {% for item in actividad %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ item.accion }}</h6>
+                                <small>{{ item.fecha }}</small>
+                            </div>
+                            <p class="mb-1">{{ item.descripcion }}</p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-exclamation-circle text-muted mb-3" style="font-size: 40px;"></i>
+                            <p>No hay actividad reciente para mostrar.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Perfil -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProfileModalLabel">Editar Perfil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('profile') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="nombre_usuario" class="form-label">Nombre de Usuario</label>
+                        <input type="text" class="form-control" id="nombre_usuario" name="nombre_usuario" value="{{ session.nombre_usuario }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Correo Electrónico</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ session.email }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="biografia" class="form-label">Biografía</label>
+                        <textarea class="form-control" id="biografia" name="biografia" rows="4">{{ session.biografia }}</textarea>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cambiar Contraseña -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changePasswordModalLabel">Cambiar Contraseña</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('change_password') }}" method="POST" id="changePasswordForm">
+                    <div class="mb-3">
+                        <label for="old_password" class="form-label">Contraseña Actual</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="old_password" name="old_password" required>
+                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="old_password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">Nueva Contraseña</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="new_password" name="new_password" required>
+                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="new_password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">La contraseña debe tener al menos 8 caracteres, incluir letras mayúsculas, minúsculas y números.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirmar Nueva Contraseña</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="confirm_password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Alternar visibilidad de contraseñas
+        const toggleBtns = document.querySelectorAll('.toggle-password');
+        toggleBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const passwordInput = document.getElementById(targetId);
+                
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    this.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                } else {
+                    passwordInput.type = 'password';
+                    this.innerHTML = '<i class="fas fa-eye"></i>';
+                }
+            });
+        });
+        
+        // Validación de formulario de cambio de contraseña
+        const changePasswordForm = document.getElementById('changePasswordForm');
+        if (changePasswordForm) {
+            changePasswordForm.addEventListener('submit', function(event) {
+                const newPassword = document.getElementById('new_password').value;
+                const confirmPassword = document.getElementById('confirm_password').value;
+                
+                // Verificar que las contraseñas coinciden
+                if (newPassword !== confirmPassword) {
+                    event.preventDefault();
+                    alert('Las contraseñas no coinciden. Por favor, inténtalo de nuevo.');
+                    return false;
+                }
+                
+                // Verificar requisitos de contraseña
+                const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+                if (!passwordRegex.test(newPassword)) {
+                    event.preventDefault();
+                    alert('La contraseña debe tener al menos 8 caracteres, incluir letras mayúsculas, minúsculas y números.');
+                    return false;
+                }
+                
+                return true;
+            });
+        }
+        
+        // Mostrar mensajes de éxito/error automáticamente
+        const alerts = document.querySelectorAll('.alert');
+        if (alerts.length > 0) {
+            setTimeout(function() {
+                alerts.forEach(alert => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+        }
+        
+        // Inicializar tooltips de Bootstrap si existen
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+    });
+</script>
+{% endblock %}
