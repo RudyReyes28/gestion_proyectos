@@ -132,22 +132,72 @@
             <div class="tab-pane fade" id="colaborativos" role="tabpanel" aria-labelledby="colaborativos-tab">
                 <h3 class="mb-4">Proyectos Colaborativos</h3>
                 
-                <div class="empty-state">
-                    <i class="fas fa-users"></i>
-                    <h4>No tienes proyectos colaborativos</h4>
-                    <p>Aquí aparecerán los proyectos en los que seas colaborador</p>
+                {% if proyectos_colaborativos|length > 0 %}
+                <div class="row">
+                    {% for proyecto in proyectos_colaborativos %}
+                    <div class="col-md-4 project-card">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ proyecto.nombre }}</h5>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="badge bg-{{ 'success' if proyecto[4] == 'publico' else 'secondary' }}">{{ proyecto[4] }}</span>
+                                    <span class="project-date">Creado: {{ proyecto[3].strftime('%d/%m/%Y') }}</span>
+                                </div>
+                                <p class="card-text project-description">{{ proyecto[2] }}</p>
+                            </div>
+                            <div class="card-footer">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ url_for('view_project', project_id=proyecto[0]) }}" class="btn btn-sm btn-outline-primary">Ver Proyecto</a>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-folder-open"></i>
+                    <h4>No tienes proyectos colaborativos</h4>
+                    
+                </div>
+                {% endif %}
             </div>
             
             <!-- Proyectos Públicos -->
             <div class="tab-pane fade" id="publicos" role="tabpanel" aria-labelledby="publicos-tab">
                 <h3 class="mb-4">Proyectos Públicos</h3>
                 
-                <div class="empty-state">
-                    <i class="fas fa-globe"></i>
-                    <h4>No hay proyectos públicos disponibles</h4>
-                    <p>Aquí aparecerán los proyectos públicos de otros usuarios</p>
+                {% if proyectos_publicos|length > 0 %}
+                <div class="row">
+                    {% for proyecto in proyectos_publicos %}
+                    <div class="col-md-4 project-card">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ proyecto.nombre }}</h5>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="badge bg-{{ 'success' if proyecto[4] == 'publico' else 'secondary' }}">{{ proyecto[4] }}</span>
+                                    <span class="project-date">Creado: {{ proyecto[3].strftime('%d/%m/%Y') }}</span>
+                                </div>
+                                <p class="card-text project-description">{{ proyecto[2] }}</p>
+                            </div>
+                            <div class="card-footer">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ url_for('view_project_public', project_id=proyecto[0]) }}" class="btn btn-sm btn-outline-primary">Ver Proyecto</a>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-folder-open"></i>
+                    <h4>No hay proyectos publicos</h4>
+                    
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

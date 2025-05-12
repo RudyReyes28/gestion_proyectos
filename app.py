@@ -49,7 +49,10 @@ def index():
 def home():
     if "user_id" in session:
         proyectos = proyectosDao.get_projects_by_user(session["user_id"])
-        return render_template("home.html", proyectos=proyectos)
+        proyectos_colaborativos = proyectosDao.get_projects_collaborative(session["user_id"])
+        proyectos_publicos = proyectosDao.get_projects_publics_not_myself(session["user_id"])
+
+        return render_template("home.html", proyectos=proyectos, proyectos_colaborativos=proyectos_colaborativos, proyectos_publicos=proyectos_publicos)
     else:
         return redirect(url_for("index"))
 
@@ -157,12 +160,28 @@ def view_project(project_id):
         comentarios = comentariosDao.get_comment_by_project_id(project_id)
         archivos = archivosDao.get_files_by_project_id(project_id)
         colaboradores = colaboradorDao.get_all_colaboradores_by_project(project_id)
+        project_owner = proyectosDao.get_project_owner(project_id)
         tipos_archivo = TipoArchivoDao.get_all_file_types()
         error = request.args.get("error")
-        return render_template("project.html", project=project, comentarios=comentarios, archivos=archivos, colaboradores=colaboradores, tipos_archivo=tipos_archivo, error=error)
+        return render_template("project.html", project=project, comentarios=comentarios, archivos=archivos, colaboradores=colaboradores, tipos_archivo=tipos_archivo, error=error, project_owner=project_owner)
     else:
         return redirect(url_for("index"))
 
+
+@app.route("/home/view_project_public/<int:project_id>")
+def view_project_public(project_id):
+    if "user_id" in session:
+        project = proyectosDao.get_project_by_id(project_id)
+        comentarios = comentariosDao.get_comment_by_project_id(project_id)
+        archivos = archivosDao.get_files_by_project_id(project_id)
+        colaboradores = colaboradorDao.get_all_colaboradores_by_project(project_id)
+        project_owner = proyectosDao.get_project_owner(project_id)
+        tipos_archivo = TipoArchivoDao.get_all_file_types()
+        error = request.args.get("error")
+        return render_template("project_public.html", project=project, comentarios=comentarios, archivos=archivos, colaboradores=colaboradores, tipos_archivo=tipos_archivo, error=error, project_owner=project_owner)
+    else:
+        return redirect(url_for("index"))
+    
 
 @app.route("/home/view_project/new_file/<int:project_id>", methods=["POST"])
 def add_file(project_id):
@@ -324,11 +343,6 @@ def download_version(version_id):
         return redirect(url_for("index"))
     
 
-@app.route("/home/view_project/restore_version/<int:version_id>/<int:file_id>")
-def restore_version(version_id, file_id):
-    any 
-
-
 @app.route("/home/view_project/download_project/<int:project_id>")
 def download_project(project_id):
     if "user_id" in session:
@@ -367,6 +381,30 @@ def download_project(project_id):
             )
             
         return redirect(url_for('home', error="Proyecto no encontrado"))
+    else:
+        return redirect(url_for("index"))
+
+
+
+#DESCARGAS PROYECTOS PUBLICOS
+@app.route("/home/view_project_public/download_file/<int:file_id>")
+def download_file_public(file_id):
+    if "user_id" in session:
+        file = archivosDao.get_file_by_id(file_id)
+        if file:
+            # Crear archivo en memoria
+            file_data = io.BytesIO()
+            file_data.write(file[2].encode('utf-8'))
+            file_data.seek(0)
+            
+            # Enviar archivo como descarga
+            return send_file(
+                file_data,
+                as_attachment=True,
+                download_name=file[1],
+                mimetype='text/plain'
+            )
+        return redirect(url_for('view_project_public', project_id=file[4], error="Archivo no encontrado"))
     else:
         return redirect(url_for("index"))
 
