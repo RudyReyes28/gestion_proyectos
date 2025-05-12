@@ -82,3 +82,9 @@ class ColaboradorDAO:
             #enviar correo al colaborador
             enviar_correo(gmail_colaborador, "Colaboración en proyecto", "Has sido añadido como colaborador en el proyecto.", nombre_proyecto)
         return self.cursor.rowcount > 0
+
+    def remove_colaborator(self, id_proyecto, id_usuario):
+        query = "DELETE FROM Colaboradores WHERE id_proyecto = ? AND id_usuario = ?"
+        self.cursor.execute(query, (id_proyecto, id_usuario))
+        self.connection.commit()
+        return self.cursor.rowcount > 0

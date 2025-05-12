@@ -198,9 +198,9 @@
             <a href="{{ url_for('edit_project', project_id=project[0]) }}" class="btn btn-outline-secondary">
                 <i class="fas fa-edit"></i> Editar Proyecto
             </a>
-            <button class="btn btn-outline-primary ms-2 disabled">
+            <a href="{{ url_for('download_project', project_id=project[0]) }}" class="btn btn-outline-primary ms-2">
                 <i class="fas fa-download"></i> Descargar ZIP
-            </button>
+            </a>
         </div>
     </div>
 </div>
@@ -329,12 +329,12 @@
                                 <div class="editor-toolbar">
                                     <span id="currentFileName"></span>
                                     <div>
-                                        <button class="btn btn-sm btn-outline-secondary disabled">
+                                        <a id="downloadFileBtn" href="#" class="btn btn-sm btn-outline-secondary">
                                             <i class="fas fa-download"></i> Descargar
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-secondary disabled" id="btnVersions">
+                                        </a>
+                                        <a id="versionsFileBtn" href="#" class="btn btn-sm btn-outline-secondary">
                                             <i class="fas fa-history"></i> Versiones
-                                        </button>
+                                        </a>
                                     </div>
                                 </div>
                                 <div id="viewMode" class="editor-content">
@@ -390,11 +390,24 @@
                         <h5>Comentarios del Proyecto</h5>
                         
                         <div class="comment-form">
-                            <form>
+                            <form method="POST" action="{{ url_for('add_comment')}}">
                                 <div class="mb-3">
-                                    <textarea class="form-control" rows="3" placeholder="Añade un comentario..."></textarea>
+                                    <textarea class="form-control" name="contenido" rows="3" placeholder="Añade un comentario..."></textarea>
                                 </div>
-                                <button type="button" class="btn btn-primary">Enviar Comentario</button>
+                                <input type="hidden" name="project_id" value="{{ project[0] }}">
+                                <div class="mb-3">
+                                    <select class="form-select" name="id_archivo">
+                                        <option value="" selected disabled>Selecciona un archivo</option>
+                                        {% for archivo in archivos %}
+                                            <option value="{{ archivo[0] }}">{{ archivo[1] }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <p>Linea de codigo:</p>
+                                    <input type="number" class="form-control" name="linea_codigo" placeholder="Ej: 10">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Enviar Comentario</button>
                             </form>
                         </div>
                         
@@ -403,8 +416,10 @@
                                 {% for comentario in comentarios %}
                                 <div class="comment-item">
                                     <div class="comment-header">
-                                        <div class="comment-user">{{ comentario[4] }}</div>
+                                        <div class="comment-user">{{ comentario.nombre_usuario }}</div>
                                         <div class="comment-date">{{ comentario[2].strftime('%d/%m/%Y %H:%M') }}</div>
+                                        <div class="comment-file">{{ comentario.nombre_archivo }}</div>
+                                        <div class="comment-line">Línea: {{ comentario.linea_codigo }}</div>
                                     </div>
                                     <div class="comment-content">
                                         {{ comentario[1] }}
@@ -451,9 +466,13 @@
                                             <div>{{ colaborador[1] }}</div>
                                             <div class="text-muted">Colaborador</div>
                                         </div>
-                                        <button class="btn btn-sm btn-outline-danger">
-                                            <i class="fas fa-times"></i>
-                                        </button>
+                                        <!-- Eliminar colaborador-->
+                                        <form method="POST" action="{{ url_for('delete_collaborator', colaborador_id=colaborador[0]) }}">
+                                            <input type="hidden" name="project_id" value="{{ project[0] }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </li>
                                 {% endif %}
@@ -512,27 +531,31 @@
     }
     // Seleccionar un archivo
     function selectFile(fileId, fileName, fileContent) {
-        currentFileId = fileId;
-        
-        // Actualizar interfaz
-        document.getElementById('noFileSelected').style.display = 'none';
-        document.getElementById('fileContent').style.display = 'block';
-        document.getElementById('viewMode').style.display = 'block';
-        document.getElementById('editMode').style.display = 'none';
-        
-        // Mostrar nombre y contenido
-        document.getElementById('currentFileName').textContent = fileName;
-        document.getElementById('fileContentView').textContent = fileContent;
-        
-        // Resaltar elemento seleccionado
-        const fileItems = document.querySelectorAll('.file-item');
-        fileItems.forEach(item => {
-            item.classList.remove('active');
-            if (item.dataset.fileId == fileId) {
-                item.classList.add('active');
-            }
-        });
-    }
+    currentFileId = fileId;
+    
+    // Actualizar interfaz
+    document.getElementById('noFileSelected').style.display = 'none';
+    document.getElementById('fileContent').style.display = 'block';
+    document.getElementById('viewMode').style.display = 'block';
+    document.getElementById('editMode').style.display = 'none';
+    
+    // Mostrar nombre y contenido
+    document.getElementById('currentFileName').textContent = fileName;
+    document.getElementById('fileContentView').textContent = fileContent;
+    
+    // Actualizar los botones con enlaces apropiados
+    document.getElementById('downloadFileBtn').href = `/home/view_project/download_file/${fileId}`;
+    document.getElementById('versionsFileBtn').href = `/home/view_project/version_file/${fileId}`;
+    
+    // Resaltar elemento seleccionado
+    const fileItems = document.querySelectorAll('.file-item');
+    fileItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.fileId == fileId) {
+            item.classList.add('active');
+        }
+    });
+}
     
     // Editar archivo
     function editFile(fileId, fileName, fileContent) {

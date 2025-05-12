@@ -100,3 +100,22 @@ CREATE TABLE Comentarios (
 
 
 
+
+
+
+-- TRIGGER PARA VERSIONES DE ARCHIVOS
+CREATE TRIGGER trg_AfterUpdate_Archivos
+ON Archivos
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO Versiones_Archivo (id_archivo, contenido, fecha_version, id_usuario)
+    SELECT
+        i.id,             -- ID del archivo
+        i.contenido,      -- Contenido actualizado
+        GETDATE(),        -- Fecha actual como versión
+        i.id_usuario_modificador  -- Usuario que modificó
+    FROM inserted i
+END;

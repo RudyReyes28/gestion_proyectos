@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+
+{% block title %}CodeShare - Versiones del archivo{% endblock %}
+
+{% block extra_css %}
+.version-list {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+.version-item {
+    padding: 10px 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    background-color: #f8f9fa;
+}
+.version-item:hover {
+    background-color: #e9ecef;
+}
+.version-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+.version-date {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+.version-author {
+    font-weight: bold;
+}
+.version-content {
+    display: none;
+    padding: 10px;
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    margin-top: 10px;
+    white-space: pre-wrap;
+    font-family: monospace;
+}
+.version-active {
+    border-left: 4px solid #0d6efd;
+}
+.version-comparison {
+    padding: 20px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    margin-top: 20px;
+}
+.comparison-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.comparison-content {
+    display: flex;
+    gap: 20px;
+}
+.version-panel {
+    flex: 1;
+    padding: 10px;
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+.panel-header {
+    font-weight: bold;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+.panel-content {
+    white-space: pre-wrap;
+    font-family: monospace;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* Estilos para el diff */
+.diff-line-added {
+    background-color: #d4edda;
+    color: #155724;
+}
+.diff-line-removed {
+    background-color: #f8d7da;
+    color: #721c24;
+    text-decoration: line-through;
+}
+.diff-line-unchanged {
+    color: #6c757d;
+}
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Historial de versiones: {{ file[1] }}</h2>
+        <div>
+            <a href="{{ url_for('view_project', project_id=project_id) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Volver al proyecto
+            </a>
+            <a href="{{ url_for('download_file', file_id=file[0]) }}" class="btn btn-outline-primary">
+                <i class="fas fa-download"></i> Descargar archivo actual
+            </a>
+        </div>
+    </div>
+
+    {% if versions|length > 0 %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" id="versionTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="history-tab" data-bs-toggle="tab" data-bs-target="#history-content" 
+                            type="button" role="tab" aria-controls="history-content" aria-selected="true">
+                        <i class="fas fa-history"></i> Historial
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="compare-tab" data-bs-toggle="tab" data-bs-target="#compare-content" 
+                            type="button" role="tab" aria-controls="compare-content" aria-selected="false">
+                        <i class="fas fa-code-compare"></i> Comparar versiones
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content" id="versionTabsContent">
+                <!-- Pestaña de Historial -->
+                <div class="tab-pane fade show active" id="history-content" role="tabpanel" aria-labelledby="history-tab">
+                    <p class="text-muted mb-3">Selecciona una versión para ver su contenido. La versión actual del archivo se muestra primero.</p>
+                    
+                    <!-- Versión actual del archivo -->
+                    <div class="version-item version-active">
+                        <div class="version-header">
+                            <div>
+                                <span class="badge bg-primary">Actual</span>
+                                <span class="version-author ms-2">{{ file[5] }}</span>
+                            </div>
+                            <div class="version-date">{{ file[3].strftime('%d/%m/%Y %H:%M') }}</div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="toggleVersionContent('current')">
+                                <i class="fas fa-code"></i> Ver contenido
+                            </button>
+                            <div>
+                                <a href="{{ url_for('download_file', file_id=file[0]) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-download"></i> Descargar
+                                </a>
+                            </div>
+                        </div>
+                        <div id="version-content-current" class="version-content">{{ file[2] }}</div>
+                    </div>
+                    
+                    <!-- Versiones anteriores -->
+                    <ul class="version-list">
+                        {% for version in versions %}
+                        <li class="version-item">
+                            <div class="version-header">
+                                <div>
+                                    <span class="badge bg-secondary">v{{ loop.index }}</span>
+                                    <span class="version-author ms-2">{{ version[4] }}</span>
+                                </div>
+                                <div class="version-date">{{ version[2].strftime('%d/%m/%Y %H:%M') }}</div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="toggleVersionContent('{{ version[0] }}')">
+                                    <i class="fas fa-code"></i> Ver contenido
+                                </button>
+                            </div>
+                            <div id="version-content-{{ version[0] }}" class="version-content">{{ version[1] }}</div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <!-- Pestaña de Comparación -->
+                <div class="tab-pane fade" id="compare-content" role="tabpanel" aria-labelledby="compare-tab">
+                    <div class="row mb-3">
+                        <div class="col-md-5">
+                            <label class="form-label">Versión base</label>
+                            <select class="form-select" id="baseVersionSelect">
+                                <option value="current" selected>Versión actual</option>
+                                {% for version in versions %}
+                                <option value="{{ version[0] }}">v{{ loop.index }} - {{ version[2].strftime('%d/%m/%Y %H:%M') }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end justify-content-center">
+                            <i class="fas fa-exchange-alt fa-2x text-muted"></i>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">Versión a comparar</label>
+                            <select class="form-select" id="compareVersionSelect">
+                                {% for version in versions %}
+                                <option value="{{ version[0] }}" {% if loop.index == 1 %}selected{% endif %}>v{{ loop.index }} - {{ version[2].strftime('%d/%m/%Y %H:%M') }}</option>
+                                {% endfor %}
+                                <option value="current">Versión actual</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary w-100" id="compareVersionsBtn">
+                        <i class="fas fa-code-compare"></i> Comparar versiones
+                    </button>
+                    
+                    <div id="comparison-result" class="version-comparison" style="display: none;">
+                        <div class="comparison-header">
+                            <h5>Resultado de la comparación</h5>
+                            <button class="btn btn-sm btn-outline-secondary" id="toggleDiffViewBtn">
+                                <i class="fas fa-columns"></i> Cambiar vista
+                            </button>
+                        </div>
+                        
+                        <div id="unified-diff" class="panel-content mb-3"></div>
+                        
+                        <div id="side-by-side-diff" class="comparison-content" style="display: none;">
+                            <div class="version-panel">
+                                <div class="panel-header" id="leftVersionHeader">Versión base</div>
+                                <div class="panel-content" id="leftVersionContent"></div>
+                            </div>
+                            <div class="version-panel">
+                                <div class="panel-header" id="rightVersionHeader">Versión a comparar</div>
+                                <div class="panel-content" id="rightVersionContent"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Este archivo no tiene versiones anteriores registradas.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Almacenar el contenido de las versiones
+    const versionContents = {
+        'current': `{{ file[2]|safe }}`,
+        {% for version in versions %}
+        '{{ version[0] }}': `{{ version[1]|safe }}`,
+        {% endfor %}
+    };
+    
+    // Almacenar la información de las versiones
+    const versionInfo = {
+        'current': {
+            title: 'Versión actual',
+            date: '{{ file[3].strftime("%d/%m/%Y %H:%M") }}',
+            author: '{{ file[5] }}'
+        },
+        {% for version in versions %}
+        '{{ version[0] }}': {
+            title: 'v{{ loop.index }}',
+            date: '{{ version[2].strftime("%d/%m/%Y %H:%M") }}',
+            author: '{{ version[4] }}'
+        },
+        {% endfor %}
+    };
+    
+    // Mostrar/ocultar contenido de versión
+    function toggleVersionContent(versionId) {
+        const contentElement = document.getElementById(`version-content-${versionId}`);
+        if (contentElement.style.display === 'block') {
+            contentElement.style.display = 'none';
+        } else {
+            contentElement.style.display = 'block';
+        }
+    }
+    
+    // Función para comparar textos línea por línea
+    function compareTexts(oldText, newText) {
+        const oldLines = oldText.split('\n');
+        const newLines = newText.split('\n');
+        
+        // Algoritmo simple de diferencias
+        let unifiedDiff = '';
+        let leftContent = '';
+        let rightContent = '';
+        
+        const maxLength = Math.max(oldLines.length, newLines.length);
+        
+        for (let i = 0; i < maxLength; i++) {
+            const oldLine = i < oldLines.length ? oldLines[i] : '';
+            const newLine = i < newLines.length ? newLines[i] : '';
+            
+            if (oldLine === newLine) {
+                unifiedDiff += `<div class="diff-line-unchanged">${i+1}: ${escapeHtml(oldLine)}</div>`;
+                leftContent += `<div>${i+1}: ${escapeHtml(oldLine)}</div>`;
+                rightContent += `<div>${i+1}: ${escapeHtml(newLine)}</div>`;
+            } else {
+                if (oldLine) {
+                    unifiedDiff += `<div class="diff-line-removed">- ${i+1}: ${escapeHtml(oldLine)}</div>`;
+                    leftContent += `<div class="diff-line-removed">${i+1}: ${escapeHtml(oldLine)}</div>`;
+                }
+                if (newLine) {
+                    unifiedDiff += `<div class="diff-line-added">+ ${i+1}: ${escapeHtml(newLine)}</div>`;
+                    rightContent += `<div class="diff-line-added">${i+1}: ${escapeHtml(newLine)}</div>`;
+                }
+            }
+        }
+        
+        return {
+            unifiedDiff,
+            leftContent,
+            rightContent
+        };
+    }
+    
+    // Escapar HTML para mostrar correctamente el código
+    function escapeHtml(text) {
+        const element = document.createElement('div');
+        element.innerText = text;
+        return element.innerHTML;
+    }
+    
+    // Comparar versiones cuando se hace clic en el botón
+    document.getElementById('compareVersionsBtn').addEventListener('click', function() {
+        const baseVersionId = document.getElementById('baseVersionSelect').value;
+        const compareVersionId = document.getElementById('compareVersionSelect').value;
+        
+        if (baseVersionId === compareVersionId) {
+            alert('Por favor selecciona dos versiones diferentes para comparar.');
+            return;
+        }
+        
+        const baseContent = versionContents[baseVersionId];
+        const compareContent = versionContents[compareVersionId];
+        
+        const diff = compareTexts(baseContent, compareContent);
+        
+        // Actualizar encabezados
+        document.getElementById('leftVersionHeader').textContent = 
+            `${versionInfo[baseVersionId].title} (${versionInfo[baseVersionId].date})`;
+        document.getElementById('rightVersionHeader').textContent = 
+            `${versionInfo[compareVersionId].title} (${versionInfo[compareVersionId].date})`;
+        
+        // Mostrar resultados
+        document.getElementById('unified-diff').innerHTML = diff.unifiedDiff;
+        document.getElementById('leftVersionContent').innerHTML = diff.leftContent;
+        document.getElementById('rightVersionContent').innerHTML = diff.rightContent;
+        document.getElementById('comparison-result').style.display = 'block';
+    });
+    
+    // Cambiar entre vista unificada y lado a lado
+    document.getElementById('toggleDiffViewBtn').addEventListener('click', function() {
+        const unifiedDiff = document.getElementById('unified-diff');
+        const sideBySideDiff = document.getElementById('side-by-side-diff');
+        
+        if (unifiedDiff.style.display === 'none') {
+            unifiedDiff.style.display = 'block';
+            sideBySideDiff.style.display = 'none';
+            this.innerHTML = '<i class="fas fa-columns"></i> Ver lado a lado';
+        } else {
+            unifiedDiff.style.display = 'none';
+            sideBySideDiff.style.display = 'flex';
+            this.innerHTML = '<i class="fas fa-align-justify"></i> Ver unificado';
+        }
+    });
+</script>
+{% endblock %}

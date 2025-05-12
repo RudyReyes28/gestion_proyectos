@@ -48,7 +48,7 @@ class ComentariosDAO:
         return self.cursor.fetchall()
     
     def get_comment_by_project_id(self, project_id):
-        query = "SELECT * FROM Comentarios WHERE id_proyecto = ?"
+        query = "SELECT c.*, u.nombre_usuario, a.nombre as nombre_archivo FROM Comentarios c INNER JOIN Usuarios u ON u.id = c.id_usuario INNER JOIN Archivos a ON a.id=c.id_archivo WHERE c.id_proyecto = ?"
         self.cursor.execute(query, (project_id,))
         return self.cursor.fetchall()
     

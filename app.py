@@ -1,6 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, send_file, Response
 import os, dotenv
 import pyodbc
+import zipfile
+import io
+from datetime import datetime
 from models.Conexion import Conexion
 from models.ArchivosDAO import ArchivosDAO
 from models.ColaboradorDAO import ColaboradorDAO
@@ -224,6 +227,149 @@ def add_collaborator(project_id):
             return redirect(url_for("view_project", project_id=project_id, error=error))
     else:
         return redirect(url_for("view_project", project_id=project_id))
+    
+@app.route("/home/view_project/delete_colaborator/<int:colaborador_id>", methods=["POST"])
+def delete_collaborator(colaborador_id):
+    project_id = request.form["project_id"]
+    sucess = colaboradorDao.remove_colaborador(project_id, colaborador_id)
+    if sucess:
+        return redirect(url_for("view_project", project_id=project_id))
+    else:
+        error = "Error deleting collaborator"
+        return redirect(url_for("view_project", project_id=project_id))
+
+
+#COMENTARIOS
+@app.route("/home/view_project/add_comment", methods=["POST"])
+def add_comment():
+    if request.method == "POST":
+        id_usuario = session["user_id"]
+        id_proyecto = request.form["project_id"]
+        contenido = request.form["contenido"]
+        id_archivo = request.form["id_archivo"]
+        linea_codigo = request.form["linea_codigo"]
+        
+        if comentariosDao.create_comment(contenido, id_usuario, id_proyecto, id_archivo, linea_codigo):
+            return redirect(url_for("view_project", project_id=id_proyecto))
+        else:
+            error = "Error creating comment"
+            return redirect(url_for("view_project", project_id=id_proyecto, error=error))
+    else:
+        return redirect(url_for("home"))
+
+
+#VERSIONES DE ARCHIVOS
+@app.route("/home/view_project/version_file/<int:file_id>", methods=["GET"])
+def view_file_version(file_id):
+    if "user_id" in session:
+        file = archivosDao.get_file_by_id(file_id)
+        project_id = file[4]
+        versions = archivosDao.get_file_versions(file_id)
+        return render_template("file_version.html", file=file, versions=versions, project_id=project_id)
+    else:
+        return redirect(url_for("index"))
+
+
+
+#DESCARGAS
+@app.route("/home/view_project/download_file/<int:file_id>")
+def download_file(file_id):
+    if "user_id" in session:
+        file = archivosDao.get_file_by_id(file_id)
+        if file:
+            # Crear archivo en memoria
+            file_data = io.BytesIO()
+            file_data.write(file[2].encode('utf-8'))
+            file_data.seek(0)
+            
+            # Enviar archivo como descarga
+            return send_file(
+                file_data,
+                as_attachment=True,
+                download_name=file[1],
+                mimetype='text/plain'
+            )
+        return redirect(url_for('view_project', project_id=file[4], error="Archivo no encontrado"))
+    else:
+        return redirect(url_for("index"))
+    
+
+
+@app.route("/home/view_project/download_version/<int:version_id>")
+def download_version(version_id):
+    if "user_id" in session:
+        version = archivosDao.get_version_by_id(version_id)
+        if version:
+            # Obtener el archivo principal para su nombre
+            file = archivosDao.get_file_by_id(version[0])
+            
+            # Crear archivo en memoria
+            file_data = io.BytesIO()
+            file_data.write(version[1].encode('utf-8'))
+            file_data.seek(0)
+            
+            # Nombre con timestamp para diferenciar versión
+            version_date = version[2].strftime('%Y%m%d_%H%M')
+            filename = f"{file[1].split('.')[0]}_{version_date}.{file[1].split('.')[-1]}"
+            
+            # Enviar archivo como descarga
+            return send_file(
+                file_data,
+                as_attachment=True,
+                download_name=filename,
+                mimetype='text/plain'
+            )
+        return redirect(url_for('index', error="Versión no encontrada"))
+    else:
+        return redirect(url_for("index"))
+    
+
+@app.route("/home/view_project/restore_version/<int:version_id>/<int:file_id>")
+def restore_version(version_id, file_id):
+    any 
+
+
+@app.route("/home/view_project/download_project/<int:project_id>")
+def download_project(project_id):
+    if "user_id" in session:
+        project = proyectosDao.get_project_by_id(project_id)
+        archivos = archivosDao.get_files_by_project_id(project_id)
+        
+        if project:
+            # Crear el archivo ZIP en memoria
+            memory_file = io.BytesIO()
+            with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                # Agregar README.md como primer archivo si existe
+                readme_file = None
+                for archivo in archivos:
+                    if archivo[1].lower() == 'readme.md':
+                        readme_file = archivo
+                        break
+                
+                if readme_file:
+                    zipf.writestr(readme_file[1], readme_file[2])
+                
+                # Agregar el resto de archivos
+                for archivo in archivos:
+                    if archivo != readme_file:  # Evita duplicar el README
+                        zipf.writestr(archivo[1], archivo[2])
+            
+            # Preparar el archivo para su descarga
+            memory_file.seek(0)
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M')
+            zipname = f"{project[1].replace(' ', '_')}_{timestamp}.zip"
+            
+            return send_file(
+                memory_file,
+                mimetype='application/zip',
+                as_attachment=True,
+                download_name=zipname
+            )
+            
+        return redirect(url_for('home', error="Proyecto no encontrado"))
+    else:
+        return redirect(url_for("index"))
+
 
 if __name__ == "__main__":
     app.run(debug=True)
