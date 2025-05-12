@@ -26,8 +26,7 @@ class ArchivosDAO:
         self.connection.commit()
         return self.cursor.rowcount > 0
     
-
-
+    
     def update_file(self, file_id, nombre=None, contenido=None):
         query = "UPDATE Archivos SET "
         params = []
@@ -71,3 +70,37 @@ class ArchivosDAO:
         self.cursor.execute(query, (contenido, id_usuario_modificador, file_id))
         self.connection.commit()
         return self.cursor.rowcount > 0
+    
+    
+    
+    def get_file_versions(self, file_id):
+        """Obtiene todas las versiones de un archivo"""
+        try:
+            query = """
+                SELECT v.id, v.contenido, v.fecha_version, v.id_usuario, u.nombre_usuario
+                FROM Versiones_Archivo v
+                JOIN Usuarios u ON v.id_usuario = u.id
+                WHERE v.id_archivo = ?
+                ORDER BY v.fecha_version DESC
+                """
+            self.cursor.execute(query, (file_id,))
+            versions = self.cursor.fetchall()
+            return versions
+        except Exception as e:
+            print(f"Error al obtener versiones del archivo: {e}")
+        return []
+
+    def get_version_by_id(self, version_id):
+        """Obtiene una versión específica por su ID"""
+        try:
+            query = """
+            SELECT id_archivo, contenido, fecha_version, id_usuario
+            FROM Versiones_Archivo
+            WHERE id = ?
+            """
+            self.cursor.execute(query, (version_id,))
+            version = self.cursor.fetchone()
+            return version
+        except Exception as e:
+            print(f"Error al obtener la versión: {e}")
+        return None

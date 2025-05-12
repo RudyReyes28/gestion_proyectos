@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}CodeShare - Mis Proyectos{% endblock %}
+
+{% block extra_css %}
+.card {
+    transition: transform 0.3s;
+    height: 100%;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+.project-card {
+    margin-bottom: 20px;
+}
+.card-footer {
+    background-color: white;
+    border-top: none;
+    padding-top: 0;
+}
+.badge {
+    font-size: 0.75rem;
+}
+.project-description {
+    height: 80px;
+    overflow: hidden;
+}
+.project-actions {
+    text-align: right;
+}
+.project-date {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+.search-bar {
+    margin-bottom: 20px;
+}
+.empty-state {
+    text-align: center;
+    padding: 40px 0;
+}
+.empty-state i {
+    font-size: 50px;
+    color: #dee2e6;
+    margin-bottom: 20px;
+}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Mis Proyectos</h2>
+            <a href="{{ url_for('add_project') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nuevo Proyecto
+            </a>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="search-bar">
+            <div class="input-group">
+                <input type="text" class="form-control" id="searchProjects" placeholder="Buscar proyectos...">
+                <button class="btn btn-outline-secondary" type="button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+
+        {% if proyectos|length > 0 %}
+        <div class="row" id="projectsContainer">
+            {% for proyecto in proyectos %}
+            <div class="col-md-4 project-card">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ proyecto[1] }}</h5>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="badge bg-{{ 'success' if proyecto[4] == 'publico' else 'secondary' }}">{{ proyecto[4] }}</span>
+                            <span class="project-date">Creado: {{ proyecto[3].strftime('%d/%m/%Y') }}</span>
+                        </div>
+                        <p class="card-text project-description">{{ proyecto[2] }}</p>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('view_project', project_id=proyecto[0]) }}" class="btn btn-sm btn-outline-primary">Ver Proyecto</a>
+                            <div>
+                                <a href="{{ url_for('edit_project', project_id=proyecto[0]) }}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{{ url_for('delete_project', project_id=proyecto[0]) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Estás seguro de eliminar este proyecto?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-folder-open"></i>
+            <h4>No tienes proyectos aún</h4>
+            <p>Comienza creando tu primer proyecto</p>
+            <a href="{{ url_for('add_project') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Crear Proyecto
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Filtrar proyectos en tiempo real
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchProjects');
+        const projectCards = document.querySelectorAll('.project-card');
+        
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            projectCards.forEach(card => {
+                const title = card.querySelector('.card-title').textContent.toLowerCase();
+                const description = card.querySelector('.project-description').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

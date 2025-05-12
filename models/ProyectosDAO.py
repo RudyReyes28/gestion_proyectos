@@ -89,3 +89,26 @@ class ProyectosDAO:
         self.cursor.execute(query)
         return self.cursor.fetchall()
     
+    def get_projects_collaborative(self, user_id):
+        query = """
+            SELECT Proyectos.*
+            FROM Colaboradores
+            JOIN Proyectos ON Colaboradores.id_proyecto = Proyectos.id
+            WHERE Colaboradores.id_usuario = ?
+        """
+        self.cursor.execute(query, (user_id,))
+        return self.cursor.fetchall()
+    
+    def get_projects_publics_not_myself(self, user_id):
+        query = """
+            SELECT Proyectos.*
+            FROM Proyectos
+            WHERE visibilidad = 'publico' AND id_creador != ?
+        """
+        self.cursor.execute(query, (user_id,))
+        return self.cursor.fetchall()
+    
+    def get_project_owner(self, project_id):
+        query = "SELECT p.id_creador, u.nombre_usuario FROM Proyectos p JOIN Usuarios u ON u.id = p.id_creador  WHERE p. id = ?"
+        self.cursor.execute(query, (project_id,))
+        return self.cursor.fetchone()

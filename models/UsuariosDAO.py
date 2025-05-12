@@ -77,3 +77,9 @@ class UsuariosDAO:
         query = "SELECT * FROM Usuarios"
         self.cursor.execute(query)
         return self.cursor.fetchall()
+    
+    def get_user_by_email(self, email):
+        query = "SELECT * FROM Usuarios WHERE email = ?"
+        self.cursor.execute(query, (email,))
+        return self.cursor.fetchone()
+    

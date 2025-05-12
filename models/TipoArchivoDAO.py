@@ -3,35 +3,25 @@ class TipoArchivoDAO:
         self.connection = connection
         self.cursor = connection.cursor()
 
-    def get_all(self):
-        query = "SELECT * FROM tipo_archivo"
-        cursor = self.db.cursor()
-        cursor.execute(query)
-        rows = cursor.fetchall()
-        return rows
-
-    def get_by_id(self, id):
-        query = "SELECT * FROM tipo_archivo WHERE id = %s"
-        cursor = self.db.cursor()
-        cursor.execute(query, (id,))
-        row = cursor.fetchone()
-        return row
-
-    def create(self, nombre):
-        query = "INSERT INTO tipo_archivo (nombre) VALUES (%s)"
-        cursor = self.db.cursor()
-        cursor.execute(query, (nombre,))
-        self.db.commit()
-        return cursor.lastrowid
-
-    def update(self, id, nombre):
-        query = "UPDATE tipo_archivo SET nombre = %s WHERE id = %s"
-        cursor = self.db.cursor()
-        cursor.execute(query, (nombre, id))
-        self.db.commit()
-
-    def delete(self, id):
-        query = "DELETE FROM tipo_archivo WHERE id = %s"
-        cursor = self.db.cursor()
-        cursor.execute(query, (id,))
-        self.db.commit()
+    def get_all_file_types(self):
+        query = "SELECT * FROM Tipo_Archivo"
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
+    
+    def get_file_type_by_id(self, file_type_id):
+        query = "SELECT * FROM Tipo_Archivo WHERE id = ?"
+        self.cursor.execute(query, (file_type_id,))
+        return self.cursor.fetchone()
+    
+    def create_file_type(self, name):
+        query = "INSERT INTO Tipo_Archivo (nombre) VALUES (?)"
+        self.cursor.execute(query, (name,))
+        self.connection.commit()
+        return self.cursor.rowcount > 0
+    
+    def update_file_type(self, file_type_id, name):
+        query = "UPDATE Tipo_Archivo SET nombre = ? WHERE id = ?"
+        self.cursor.execute(query, (name, file_type_id))
+        self.connection.commit()
+        return self.cursor.rowcount > 0
+    

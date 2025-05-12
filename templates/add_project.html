@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}CodeShare - Nuevo Proyecto{% endblock %}
+
+{% block extra_css %}
+.form-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
+    background-color: white;
+}
+.form-title {
+    margin-bottom: 20px;
+    color: #343a40;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 10px;
+}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-container">
+            <h2 class="form-title">Crear Nuevo Proyecto</h2>
+            
+            {% if error %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+            {% endif %}
+            
+            <form method="POST" action="{{ url_for('add_project') }}">
+                <div class="mb-3">
+                    <label for="nombre" class="form-label">Nombre del Proyecto</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" required>
+                    <div class="form-text">Elige un nombre descriptivo para tu proyecto.</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="descripcion" class="form-label">Descripción</label>
+                    <textarea class="form-control" id="descripcion" name="descripcion" rows="4"></textarea>
+                    <div class="form-text">Describe brevemente de qué trata tu proyecto.</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Visibilidad</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="visibilidad" id="publico" value="publico" checked>
+                        <label class="form-check-label" for="publico">
+                            <i class="fas fa-globe"></i> Público
+                            <div class="form-text">Cualquier usuario puede ver este proyecto.</div>
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="visibilidad" id="privado" value="privado">
+                        <label class="form-check-label" for="privado">
+                            <i class="fas fa-lock"></i> Privado
+                            <div class="form-text">Solo tú y los colaboradores invitados pueden ver este proyecto.</div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('my_projects') }}" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Crear Proyecto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

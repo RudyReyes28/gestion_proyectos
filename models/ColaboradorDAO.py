@@ -8,7 +8,7 @@ CREATE TABLE Colaboradores (
     FOREIGN KEY (id_usuario) REFERENCES Usuarios(id)
 );
 """
-
+from models.Correos import enviar_correo
 
 class ColaboradorDAO:
     def __init__(self, connection):
@@ -63,3 +63,28 @@ class ColaboradorDAO:
         """
         self.cursor.execute(query, (id_project, id_usuario))
         return self.cursor.fetchone()
+    
+    def get_all_colaboradores_by_project(self, id_proyecto):
+        query = """
+            SELECT Usuarios.*
+            FROM Colaboradores
+            JOIN Usuarios ON Colaboradores.id_usuario = Usuarios.id
+            WHERE Colaboradores.id_proyecto = ?
+        """
+        self.cursor.execute(query, (id_proyecto,))
+        return self.cursor.fetchall()
+
+    def add_colaborator_gmail(self, id_proyecto, gmail_colaborador, id_colaborador, nombre_proyecto):
+        query = "INSERT INTO Colaboradores (id_proyecto, id_usuario) VALUES (?, ?)"
+        self.cursor.execute(query, (id_proyecto, id_colaborador))
+        self.connection.commit()
+        if self.cursor.rowcount > 0:
+            #enviar correo al colaborador
+            enviar_correo(gmail_colaborador, "Colaboración en proyecto", "Has sido añadido como colaborador en el proyecto.", nombre_proyecto)
+        return self.cursor.rowcount > 0
+
+    def remove_colaborator(self, id_proyecto, id_usuario):
+        query = "DELETE FROM Colaboradores WHERE id_proyecto = ? AND id_usuario = ?"
+        self.cursor.execute(query, (id_proyecto, id_usuario))
+        self.connection.commit()
+        return self.cursor.rowcount > 0
