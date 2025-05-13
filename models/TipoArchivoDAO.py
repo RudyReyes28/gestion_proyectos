@@ -4,21 +4,22 @@ class TipoArchivoDAO:
         self.cursor = connection.cursor()
 
     def get_all_file_types(self):
-        query = "EXEC Obtener_Todos_Tipo_Archivo"
+        query = "SELECT * FROM Vista_Tipo_Archivo"
         self.cursor.execute(query)
         return self.cursor.fetchall()
 
     def get_file_type_by_id(self, file_type_id):
-        query = "EXEC Obtener_Tipo_Archivo_Por_ID ?"
+        query = "SELECT * FROM Vista_Tipo_Archivo WHERE id = ?"
         self.cursor.execute(query, (file_type_id,))
         return self.cursor.fetchone()
 
     def create_file_type(self, name, extension):
         try:
-            query = "EXEC Crear_Tipo_Archivo ?, ?"
+            query = "DECLARE @resultado BIT; EXEC Crear_Tipo_Archivo ?, ?, @resultado OUTPUT; SELECT @resultado;"
             self.cursor.execute(query, (name, extension))
+            result = self.cursor.fetchone()[0] 
             self.connection.commit()
-            return self.cursor.rowcount > 0
+            return bool(result)
         except Exception as e:
             print(f"Error al crear tipo de archivo: {e}")
             return False
