@@ -25,7 +25,7 @@ class TipoArchivoDAO:
             return False
 
     def update_file_type(self, file_type_id, name, extension):
-        query = "EXEC Actualizar_Tipo_Archivo ?, ?, ?"
+        query = "UPDATE Tipo_Archivo SET nombre = ?, extension = ? WHERE id = ?"
         self.cursor.execute(query, (file_type_id, name, extension))
         self.connection.commit()
         return self.cursor.rowcount > 0
