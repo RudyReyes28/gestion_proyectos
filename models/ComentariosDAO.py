@@ -20,19 +20,19 @@ class ComentariosDAO:
         self.cursor = connection.cursor()
 
     def create_comment(self, contenido, id_usuario, id_proyecto, id_archivo=None, linea_codigo=None):
-        query = "INSERT INTO Comentarios (contenido, id_usuario, id_proyecto, id_archivo, linea_codigo) VALUES (?, ?, ?, ?, ?)"
+        query = "EXEC sp_insert_comentario @contenido=?, @id_usuario=?, @id_proyecto=?, @id_archivo=?, @linea_codigo=?"
         self.cursor.execute(query, (contenido, id_usuario, id_proyecto, id_archivo, linea_codigo))
         self.connection.commit()
         return self.cursor.rowcount > 0
 
     def update_comment(self, contenido, comment_id):
-        query = "UPDATE Comentarios SET contenido = ? WHERE id = ?"
+        query = "EXEC sp_update_comentario @id=?, @contenido=?"
         self.cursor.execute(query, (contenido, comment_id))
         self.connection.commit()
         return self.cursor.rowcount > 0
     
     def delete_comment(self, comment_id):
-        query = "DELETE FROM Comentarios WHERE id = ?"
+        query = "EXEC sp_delete_comentario @id=?"
         self.cursor.execute(query, (comment_id,))
         self.connection.commit() 
         return self.cursor.rowcount > 0
@@ -48,7 +48,7 @@ class ComentariosDAO:
         return self.cursor.fetchall()
     
     def get_comment_by_project_id(self, project_id):
-        query = "SELECT c.*, u.nombre_usuario, a.nombre as nombre_archivo FROM Comentarios c INNER JOIN Usuarios u ON u.id = c.id_usuario INNER JOIN Archivos a ON a.id=c.id_archivo WHERE c.id_proyecto = ?"
+        query = "SELECT * FROM fn_comentarios_por_proyecto(?)"
         self.cursor.execute(query, (project_id,))
         return self.cursor.fetchall()
     
