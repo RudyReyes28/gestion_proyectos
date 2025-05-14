@@ -16,75 +16,86 @@ class ColaboradorDAO:
         self.cursor = connection.cursor()
 
     def add_colaborador(self, id_proyecto, id_usuario):
-        query = "INSERT INTO Colaboradores (id_proyecto, id_usuario) VALUES (?, ?)"
-        self.cursor.execute(query, (id_proyecto, id_usuario))
+        query = """
+        DECLARE @resultado BIT;
+        EXEC sp_gestionar_colaborador @id_proyecto = ?, @id_usuario = ?, @accion = ?, @resultado = @resultado OUTPUT;
+        SELECT @resultado;
+        """
+        self.cursor.execute(query, (id_proyecto, id_usuario, 'agregar'))
         self.connection.commit()
-        return self.cursor.rowcount > 0
+        result = self.cursor.fetchone()
+        return result[0] == 1
+
 
     def remove_colaborador(self, id_proyecto, id_usuario):
-        query = "DELETE FROM Colaboradores WHERE id_proyecto = ? AND id_usuario = ?"
-        self.cursor.execute(query, (id_proyecto, id_usuario))
-        self.connection.commit()
-        return self.cursor.rowcount > 0
+        try:
+            self.cursor.execute("EXEC remove_colaborador @id_proyecto = ?, @id_usuario = ?", (id_proyecto, id_usuario))
+            self.connection.commit()
+            return True
+        except Exception as e:
+            self.connection.rollback()
+            return False
     
     def get_projects_by_user_id(self, id_usuario):
-        query = "SELECT id_proyecto FROM Colaboradores WHERE id_usuario = ?"
+        query = "SELECT id_proyecto FROM vista_colaboradores_base WHERE id_usuario = ?"
         self.cursor.execute(query, (id_usuario,))
         return self.cursor.fetchall()
     
     def get_users_by_project_id(self, id_proyecto):
-        query = "SELECT id_usuario FROM Colaboradores WHERE id_proyecto = ?"
+        query = "SELECT id_usuario FROM vista_colaboradores_base WHERE id_proyecto = ?"
         self.cursor.execute(query, (id_proyecto,))
         return self.cursor.fetchall()
     
     def get_all_colaboradores(self):
-        query = "SELECT * FROM Colaboradores"
+        query = "SELECT id_proyecto, id_usuario FROM vista_colaboradores_base"
         self.cursor.execute(query)
         return self.cursor.fetchall()
     
     def get_content_projects_by_colaborador(self, id_usuario):
         query = """
-            SELECT Proyectos.*, Usuarios.nombre_usuario
-            FROM Colaboradores
-            JOIN Proyectos ON Colaboradores.id_proyecto = Proyectos.id
-            JOIN Usuarios ON Colaboradores.id_usuario = Usuarios.id
-            WHERE Colaboradores.id_usuario = ?
+            SELECT id_proyecto, nombre_proyecto, descripcion_proyecto, fecha_creacion, visibilidad, id_creador, nombre_usuario FROM vista_colaboradores_detalle
+            WHERE id_usuario = ?
         """
         self.cursor.execute(query, (id_usuario,))
         return self.cursor.fetchall()
     
     def get_content_project_by_colaborador(self, id_project, id_usuario):
         query = """
-            SELECT Proyectos.*, Usuarios.nombre_usuario
-            FROM Colaboradores
-            JOIN Proyectos ON Colaboradores.id_proyecto = Proyectos.id
-            JOIN Usuarios ON Colaboradores.id_usuario = Usuarios.id
-            WHERE Colaboradores.id_proyecto = ? AND Colaboradores.id_usuario = ?
+            SELECT id_proyecto, nombre_proyecto, descripcion_proyecto, fecha_creacion, visibilidad, id_creador, nombre_usuario FROM vista_colaboradores_detalle
+            WHERE id_proyecto = ? AND id_usuario = ?
         """
         self.cursor.execute(query, (id_project, id_usuario))
         return self.cursor.fetchone()
     
     def get_all_colaboradores_by_project(self, id_proyecto):
         query = """
-            SELECT Usuarios.*
-            FROM Colaboradores
-            JOIN Usuarios ON Colaboradores.id_usuario = Usuarios.id
-            WHERE Colaboradores.id_proyecto = ?
+            SELECT DISTINCT id_usuario, nombre_usuario, email, contraseña ,fecha_registro, biografia
+            FROM vista_colaboradores_detalle
+            WHERE id_proyecto = ?
         """
         self.cursor.execute(query, (id_proyecto,))
         return self.cursor.fetchall()
 
+
     def add_colaborator_gmail(self, id_proyecto, gmail_colaborador, id_colaborador, nombre_proyecto):
-        query = "INSERT INTO Colaboradores (id_proyecto, id_usuario) VALUES (?, ?)"
-        self.cursor.execute(query, (id_proyecto, id_colaborador))
-        self.connection.commit()
-        if self.cursor.rowcount > 0:
-            #enviar correo al colaborador
-            enviar_correo(gmail_colaborador, "Colaboración en proyecto", "Has sido añadido como colaborador en el proyecto.", nombre_proyecto)
-        return self.cursor.rowcount > 0
+        try:
+            self.cursor.execute("EXEC add_colaborador @id_proyecto = ?, @id_usuario = ?", (id_proyecto, id_colaborador))
+            self.connection.commit()  # Confirmar los cambios
+            if True:
+                # Enviar correo al colaborador
+                enviar_correo(gmail_colaborador,"Colaboración en proyecto","Has sido añadido como colaborador en el proyecto.",nombre_proyecto)
+                return True
+        except Exception as e:
+            self.connection.rollback()
+            return False
 
     def remove_colaborator(self, id_proyecto, id_usuario):
-        query = "DELETE FROM Colaboradores WHERE id_proyecto = ? AND id_usuario = ?"
-        self.cursor.execute(query, (id_proyecto, id_usuario))
+        query = """
+        DECLARE @resultado BIT;
+        EXEC sp_gestionar_colaborador @id_proyecto = ?, @id_usuario = ?, @accion = ?, @resultado = @resultado OUTPUT;
+        SELECT @resultado;
+        """
+        self.cursor.execute(query, (id_proyecto, id_usuario, 'eliminar'))
         self.connection.commit()
-        return self.cursor.rowcount > 0
+        result = self.cursor.fetchone()
+        return result[0] == 1

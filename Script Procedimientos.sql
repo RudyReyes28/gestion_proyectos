@@ -197,3 +197,52 @@ BEGIN
         SET @resultado = 0;
     END CATCH
 END;
+
+-- Vista Colaboradores
+CREATE VIEW vista_colaboradores_base AS
+SELECT id_usuario, id_proyecto
+FROM Colaboradores;
+
+
+-- Vista 2 colaboradores 
+CREATE VIEW vista_colaboradores_detalle AS
+SELECT 
+    c.id_proyecto,
+    c.id_usuario,
+
+    p.id AS id_proyecto_detalle,
+    p.nombre AS nombre_proyecto,
+    p.descripcion AS descripcion_proyecto,
+    p.fecha_creacion,
+    p.visibilidad,
+    p.id_creador,
+
+    u.id AS id_usuario_detalle,
+    u.nombre_usuario,
+    u.email,
+    u.contraseña,
+    u.fecha_registro,
+    u.biografia
+FROM Colaboradores c
+JOIN Proyectos p ON c.id_proyecto = p.id
+JOIN Usuarios u ON c.id_usuario = u.id;
+
+
+-- Procedimiento para ColaboradorDAO
+CREATE PROCEDURE add_colaborador 
+    @id_proyecto INT,
+    @id_usuario INT
+AS
+BEGIN
+    INSERT INTO Colaboradores (id_proyecto, id_usuario) VALUES (@id_proyecto, @id_usuario);
+END;
+
+
+CREATE PROCEDURE remove_colaborador
+    @id_proyecto INT,
+    @id_usuario INT
+AS
+BEGIN
+    DELETE FROM Colaboradores WHERE id_proyecto = @id_proyecto AND id_usuario = @id_usuario;
+END;
+
