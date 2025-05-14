@@ -1,19 +1,3 @@
-"""
-CREATE TABLE Archivos (
-    id INT PRIMARY KEY IDENTITY(1,1),
-    nombre NVARCHAR(255) NOT NULL,
-    contenido NVARCHAR(MAX) NULL,
-    ultima_modificacion DATETIME DEFAULT GETDATE(),
-    id_proyecto INT NOT NULL,
-    id_usuario_modificador INT NOT NULL,
-    id_tipo_archivo INT NOT NULL,
-    FOREIGN KEY (id_tipo_archivo) REFERENCES Tipo_Archivo(id),
-    FOREIGN KEY (id_proyecto) REFERENCES Proyectos(id),
-    FOREIGN KEY (id_usuario_modificador) REFERENCES Usuarios(id),
-);
-
-"""
-
 
 class ArchivosDAO:
     def __init__(self, connection):
@@ -21,55 +5,59 @@ class ArchivosDAO:
         self.cursor = connection.cursor()
 
     def create_file(self, nombre, id_proyecto, id_usuario_modificador, id_tipo_archivo):
-        query = "INSERT INTO Archivos (nombre, id_proyecto, id_usuario_modificador, id_tipo_archivo) VALUES (?, ?, ?, ?)"
-        self.cursor.execute(query, (nombre, id_proyecto, id_usuario_modificador, id_tipo_archivo))
-        self.connection.commit()
-        return self.cursor.rowcount > 0
+        try:
+            self.cursor.execute("EXEC proc_create_file @nombre=?, @id_proyecto=?, @id_usuario_modificador=?, @id_tipo_archivo=?", 
+                            (nombre, id_proyecto, id_usuario_modificador, id_tipo_archivo))
+            self.connection.commit()
+            return True
+        except Exception as e:
+            self.connection.rollback()
+            return False
     
     
     def update_file(self, file_id, nombre=None, contenido=None):
-        query = "UPDATE Archivos SET "
-        params = []
-        if nombre:
-            query += "nombre = ?, "
-            params.append(nombre)
-        if contenido:
-            query += "contenido = ?, "
-            params.append(contenido)
-        else:
-            query = query.rstrip(", ")
-        query += "WHERE id = ?"
-        params.append(file_id)
-        self.cursor.execute(query, tuple(params))
-        self.connection.commit()
-        return self.cursor.rowcount > 0
+        try:
+            self.cursor.execute("EXEC proc_update_file @file_id=?, @nombre=?, @contenido=?",
+                            (file_id, nombre, contenido))
+            self.connection.commit()
+            return True
+        except Exception as e:
+            self.connection.rollback()
+            return False
     
     def delete_file(self, file_id):
-        query = "DELETE FROM Archivos WHERE id = ?"
-        self.cursor.execute(query, (file_id,))
-        self.connection.commit() 
-        return self.cursor.rowcount > 0
+        try:
+            self.cursor.execute("EXEC proc_delete_file @file_id=?", (file_id,))
+            self.connection.commit()
+            return True
+        except Exception as e:
+            self.connection.rollback()
+            return False
     
     def get_file_by_id(self, file_id):
-        query = "SELECT * FROM Archivos WHERE id = ?"
+        query = "SELECT * FROM view_archivos WHERE id = ?"
         self.cursor.execute(query, (file_id,))
         return self.cursor.fetchone()
     
     def get_files_by_project_id(self, project_id):
-        query = "SELECT * FROM Archivos WHERE id_proyecto = ?"
+        query = "SELECT * FROM view_archivos WHERE id_proyecto = ?"
         self.cursor.execute(query, (project_id,))
         return self.cursor.fetchall()
     
     def get_files_by_user_id(self, user_id):
-        query = "SELECT * FROM Archivos WHERE id_usuario_modificador = ?"
+        query = "SELECT * FROM view_archivos WHERE id_usuario_modificador = ?"
         self.cursor.execute(query, (user_id,))
         return self.cursor.fetchall()
     
     def update_content(self, file_id, contenido, id_usuario_modificador):
-        query = "UPDATE Archivos SET contenido = ?, ultima_modificacion = GETDATE(), id_usuario_modificador = ? WHERE id = ?"
-        self.cursor.execute(query, (contenido, id_usuario_modificador, file_id))
-        self.connection.commit()
-        return self.cursor.rowcount > 0
+        try:
+            self.cursor.execute("EXEC proc_update_content @file_id=?, @contenido=?, @id_usuario_modificador=?",
+                            (file_id, contenido, id_usuario_modificador))
+            self.connection.commit()
+            return True
+        except Exception as e:
+            self.connection.rollback()
+            return False
     
     
     
@@ -77,11 +65,10 @@ class ArchivosDAO:
         """Obtiene todas las versiones de un archivo"""
         try:
             query = """
-                SELECT v.id, v.contenido, v.fecha_version, v.id_usuario, u.nombre_usuario
-                FROM Versiones_Archivo v
-                JOIN Usuarios u ON v.id_usuario = u.id
-                WHERE v.id_archivo = ?
-                ORDER BY v.fecha_version DESC
+                SELECT id, contenido, fecha_version, id_usuario, nombre_usuario
+                FROM view_versiones_archivo 
+                WHERE id_archivo = ?
+                ORDER BY fecha_version DESC
                 """
             self.cursor.execute(query, (file_id,))
             versions = self.cursor.fetchall()
