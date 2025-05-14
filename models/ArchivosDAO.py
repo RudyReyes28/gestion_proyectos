@@ -21,7 +21,7 @@ class ArchivosDAO:
         self.cursor = connection.cursor()
 
     def create_file(self, nombre, id_proyecto, id_usuario_modificador, id_tipo_archivo):
-        query = "INSERT INTO Archivos (nombre, id_proyecto, id_usuario_modificador, id_tipo_archivo) VALUES (?, ?, ?, ?)"
+        query = "EXEC sp_insert_archivos @nombre=?, @id_proyecto=?, @id_usuario_modificador=?, @id_tipo_archivo=?"
         self.cursor.execute(query, (nombre, id_proyecto, id_usuario_modificador, id_tipo_archivo))
         self.connection.commit()
         return self.cursor.rowcount > 0
@@ -45,28 +45,29 @@ class ArchivosDAO:
         return self.cursor.rowcount > 0
     
     def delete_file(self, file_id):
-        query = "DELETE FROM Archivos WHERE id = ?"
+        query = "EXEC sp_delete_archivos @id =?"
         self.cursor.execute(query, (file_id,))
         self.connection.commit() 
         return self.cursor.rowcount > 0
     
     def get_file_by_id(self, file_id):
-        query = "SELECT * FROM Archivos WHERE id = ?"
+        query = "SELECT * FROM view_archivos WHERE id =?"
         self.cursor.execute(query, (file_id,))
         return self.cursor.fetchone()
     
     def get_files_by_project_id(self, project_id):
-        query = "SELECT * FROM Archivos WHERE id_proyecto = ?"
+        query = "SELECT * FROM view_archivos WHERE id_proyecto =?"
         self.cursor.execute(query, (project_id,))
         return self.cursor.fetchall()
     
     def get_files_by_user_id(self, user_id):
-        query = "SELECT * FROM Archivos WHERE id_usuario_modificador = ?"
+        query = "SELECT * FROM view_archivos WHERE id_usuario_modificador =?"
         self.cursor.execute(query, (user_id,))
         return self.cursor.fetchall()
     
     def update_content(self, file_id, contenido, id_usuario_modificador):
-        query = "UPDATE Archivos SET contenido = ?, ultima_modificacion = GETDATE(), id_usuario_modificador = ? WHERE id = ?"
+        # query = "UPDATE Archivos SET contenido = ?, ultima_modificacion = GETDATE(), id_usuario_modificador = ? WHERE id = ?"
+        query = "EXEC sp_update_archivos @contenido=?, @id_usuario_modificador=?, @id=?"
         self.cursor.execute(query, (contenido, id_usuario_modificador, file_id))
         self.connection.commit()
         return self.cursor.rowcount > 0
@@ -76,13 +77,7 @@ class ArchivosDAO:
     def get_file_versions(self, file_id):
         """Obtiene todas las versiones de un archivo"""
         try:
-            query = """
-                SELECT v.id, v.contenido, v.fecha_version, v.id_usuario, u.nombre_usuario
-                FROM Versiones_Archivo v
-                JOIN Usuarios u ON v.id_usuario = u.id
-                WHERE v.id_archivo = ?
-                ORDER BY v.fecha_version DESC
-                """
+            query = "SELECT * FROM fn_archivos_obtener_versiones(?) ORDER BY fecha_version DESC"
             self.cursor.execute(query, (file_id,))
             versions = self.cursor.fetchall()
             return versions
@@ -93,11 +88,7 @@ class ArchivosDAO:
     def get_version_by_id(self, version_id):
         """Obtiene una versión específica por su ID"""
         try:
-            query = """
-            SELECT id_archivo, contenido, fecha_version, id_usuario
-            FROM Versiones_Archivo
-            WHERE id = ?
-            """
+            query = "SELECT * FROM fn_archivos_obtner_version_especifica(?)"
             self.cursor.execute(query, (version_id,))
             version = self.cursor.fetchone()
             return version
