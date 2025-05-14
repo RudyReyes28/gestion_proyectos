@@ -171,6 +171,17 @@ JOIN
     Usuarios u ON v.id_usuario = u.id;
 
 
+CREATE FUNCTION fn_archivos_obtner_version_especifica (
+  @id INT
+)
+RETURNS TABLE AS  RETURN (
+  SELECT id_archivo, contenido, fecha_version, id_usuario
+  FROM Versiones_Archivo
+  WHERE id = @id
+);
+
+
+
 
 -- VISTAS Y PROCEDIMIENTOS PARA tipo_archivo
 -- Vista general, filtrar busquedas usando where
@@ -246,3 +257,47 @@ BEGIN
     DELETE FROM Colaboradores WHERE id_proyecto = @id_proyecto AND id_usuario = @id_usuario;
 END;
 
+-- FUNCIONES Y PROCEDIMIENTOS PARA Comentarios (archivo ComentariosDAO.py)
+CREATE PROCEDURE sp_insert_comentario
+    @contenido NVARCHAR(1000),
+    @id_usuario INT,
+    @id_proyecto INT,
+    @id_archivo INT,
+    @linea_codigo INT
+AS
+BEGIN
+    INSERT INTO Comentarios (contenido, id_usuario, id_proyecto, id_archivo, linea_codigo)
+    VALUES (@contenido, @id_usuario, @id_proyecto, @id_archivo, @linea_codigo);
+END;
+
+-- Utilizado en el metodo: update_comment
+CREATE PROCEDURE sp_update_comentario
+    @id INT,
+    @contenido NVARCHAR(1000)
+AS
+BEGIN
+    UPDATE Comentarios SET contenido = @contenido WHERE id = @id;
+END;
+
+-- Utilizado en el metodo: delete_comment
+CREATE PROCEDURE sp_delete_comentario
+    @id INT
+AS
+BEGIN
+    DELETE Comentarios WHERE id = @id;
+END;
+
+-- Utilizado en el metodo: get_comment_by_project_id
+CREATE FUNCTION fn_comentarios_por_proyecto (
+  @id_proyecto INT
+)
+RETURNS TABLE AS RETURN (
+  SELECT
+    c.*,
+    u.nombre_usuario,
+    a.nombre AS nombre_archivo
+  FROM Comentarios c
+    INNER JOIN Usuarios u ON u.id = c.id_usuario
+    INNER JOIN Archivos a ON a.id = c.id_archivo
+  WHERE c.id_proyecto = @id_proyecto
+);

@@ -80,11 +80,7 @@ class ArchivosDAO:
     def get_version_by_id(self, version_id):
         """Obtiene una versión específica por su ID"""
         try:
-            query = """
-            SELECT id_archivo, contenido, fecha_version, id_usuario
-            FROM Versiones_Archivo
-            WHERE id = ?
-            """
+            query = "SELECT * FROM fn_archivos_obtner_version_especifica(?)"
             self.cursor.execute(query, (version_id,))
             version = self.cursor.fetchone()
             return version
