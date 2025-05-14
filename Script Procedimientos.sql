@@ -1,3 +1,4 @@
+
 -- Vista general, filtrar busquedas usando where
 CREATE VIEW Vista_Tipo_Archivo AS
 SELECT * FROM Tipo_Archivo;
@@ -27,3 +28,78 @@ BEGIN
     END CATCH
 END;
 GO
+
+-- Vista Colaboradores
+CREATE VIEW vista_colaboradores_base AS
+SELECT id_usuario, id_proyecto
+FROM Colaboradores;
+
+-- Vista 2 colaboradores 
+CREATE VIEW vista_colaboradores_detalle AS
+SELECT 
+    c.id_proyecto,
+    c.id_usuario,
+
+    p.id AS id_proyecto_detalle,
+    p.nombre AS nombre_proyecto,
+    p.descripcion AS descripcion_proyecto,
+    p.fecha_creacion,
+    p.visibilidad,
+    p.id_creador,
+
+    u.id AS id_usuario_detalle,
+    u.nombre_usuario,
+    u.email,
+    u.contraseña,
+    u.fecha_registro,
+    u.biografia
+FROM Colaboradores c
+JOIN Proyectos p ON c.id_proyecto = p.id
+JOIN Usuarios u ON c.id_usuario = u.id;
+
+-- Procedimiento para colaboradores
+CREATE PROCEDURE sp_gestionar_colaborador
+    @id_proyecto INT,
+    @id_usuario INT,
+    @accion NVARCHAR(10),  -- 'agregar' o 'eliminar'
+    @resultado BIT OUTPUT  -- valor de retorno: 1 o 0
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF @accion = 'agregar'
+    BEGIN
+        IF NOT EXISTS (
+            SELECT 1 FROM Colaboradores
+            WHERE id_proyecto = @id_proyecto AND id_usuario = @id_usuario
+        )
+        BEGIN
+            INSERT INTO Colaboradores (id_proyecto, id_usuario)
+            VALUES (@id_proyecto, @id_usuario);
+
+            IF @@ROWCOUNT > 0
+                SET @resultado = 1;
+            ELSE
+                SET @resultado = 0;
+        END
+        ELSE
+        BEGIN
+            SET @resultado = 0;  -- ya existía
+        END
+    END
+    ELSE IF @accion = 'eliminar'
+    BEGIN
+        DELETE FROM Colaboradores
+        WHERE id_proyecto = @id_proyecto AND id_usuario = @id_usuario;
+
+        IF @@ROWCOUNT > 0
+            SET @resultado = 1;
+        ELSE
+            SET @resultado = 0;
+    END
+    ELSE
+    BEGIN
+        SET @resultado = 0;  -- acción inválida
+    END
+END;
+
