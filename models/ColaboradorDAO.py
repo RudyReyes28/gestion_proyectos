@@ -26,16 +26,15 @@ class ColaboradorDAO:
         result = self.cursor.fetchone()
         return result[0] == 1
 
+
     def remove_colaborador(self, id_proyecto, id_usuario):
-        query = """
-        DECLARE @resultado BIT;
-        EXEC sp_gestionar_colaborador @id_proyecto = ?, @id_usuario = ?, @accion = ?, @resultado = @resultado OUTPUT;
-        SELECT @resultado;
-        """
-        self.cursor.execute(query, (id_proyecto, id_usuario, 'eliminar'))
-        self.connection.commit()
-        result = self.cursor.fetchone()
-        return result[0] == 1
+        try:
+            self.cursor.execute("EXEC remove_colaborador @id_proyecto = ?, @id_usuario = ?", (id_proyecto, id_usuario))
+            self.connection.commit()
+            return True
+        except Exception as e:
+            self.connection.rollback()
+            return False
     
     def get_projects_by_user_id(self, id_usuario):
         query = "SELECT id_proyecto FROM vista_colaboradores_base WHERE id_usuario = ?"
@@ -77,20 +76,18 @@ class ColaboradorDAO:
         self.cursor.execute(query, (id_proyecto,))
         return self.cursor.fetchall()
 
+
     def add_colaborator_gmail(self, id_proyecto, gmail_colaborador, id_colaborador, nombre_proyecto):
-        query = """
-        DECLARE @resultado BIT;
-        EXEC sp_gestionar_colaborador @id_proyecto = ?, @id_usuario = ?, @accion = ?, @resultado = @resultado OUTPUT;
-        SELECT @resultado;
-        """
-        self.cursor.execute(query, (id_proyecto, id_colaborador, 'agregar'))
-        self.connection.commit()  # Confirmar los cambios
-        result = self.cursor.fetchone()
-        if result[0] == 1:
-            # Enviar correo al colaborador
-            enviar_correo(gmail_colaborador,"Colaboración en proyecto","Has sido añadido como colaborador en el proyecto.",nombre_proyecto)
-            return True
-        return False
+        try:
+            self.cursor.execute("EXEC add_colaborador @id_proyecto = ?, @id_usuario = ?", (id_proyecto, id_colaborador))
+            self.connection.commit()  # Confirmar los cambios
+            if True:
+                # Enviar correo al colaborador
+                enviar_correo(gmail_colaborador,"Colaboración en proyecto","Has sido añadido como colaborador en el proyecto.",nombre_proyecto)
+                return True
+        except Exception as e:
+            self.connection.rollback()
+            return False
 
     def remove_colaborator(self, id_proyecto, id_usuario):
         query = """

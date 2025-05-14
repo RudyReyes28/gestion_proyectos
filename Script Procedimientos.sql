@@ -1,4 +1,3 @@
-
 -- Vista general, filtrar busquedas usando where
 CREATE VIEW Vista_Tipo_Archivo AS
 SELECT * FROM Tipo_Archivo;
@@ -33,6 +32,7 @@ GO
 CREATE VIEW vista_colaboradores_base AS
 SELECT id_usuario, id_proyecto
 FROM Colaboradores;
+GO
 
 -- Vista 2 colaboradores 
 CREATE VIEW vista_colaboradores_detalle AS
@@ -56,50 +56,24 @@ SELECT
 FROM Colaboradores c
 JOIN Proyectos p ON c.id_proyecto = p.id
 JOIN Usuarios u ON c.id_usuario = u.id;
+GO
 
--- Procedimiento para colaboradores
-CREATE PROCEDURE sp_gestionar_colaborador
+
+-- Procedimiento para ColaboradorDAO
+CREATE PROCEDURE add_colaborador 
     @id_proyecto INT,
-    @id_usuario INT,
-    @accion NVARCHAR(10),  -- 'agregar' o 'eliminar'
-    @resultado BIT OUTPUT  -- valor de retorno: 1 o 0
+    @id_usuario INT
 AS
 BEGIN
-    SET NOCOUNT ON;
+    INSERT INTO Colaboradores (id_proyecto, id_usuario) VALUES (@id_proyecto, @id_usuario);
+END;
+GO
 
-    IF @accion = 'agregar'
-    BEGIN
-        IF NOT EXISTS (
-            SELECT 1 FROM Colaboradores
-            WHERE id_proyecto = @id_proyecto AND id_usuario = @id_usuario
-        )
-        BEGIN
-            INSERT INTO Colaboradores (id_proyecto, id_usuario)
-            VALUES (@id_proyecto, @id_usuario);
-
-            IF @@ROWCOUNT > 0
-                SET @resultado = 1;
-            ELSE
-                SET @resultado = 0;
-        END
-        ELSE
-        BEGIN
-            SET @resultado = 0;  -- ya existía
-        END
-    END
-    ELSE IF @accion = 'eliminar'
-    BEGIN
-        DELETE FROM Colaboradores
-        WHERE id_proyecto = @id_proyecto AND id_usuario = @id_usuario;
-
-        IF @@ROWCOUNT > 0
-            SET @resultado = 1;
-        ELSE
-            SET @resultado = 0;
-    END
-    ELSE
-    BEGIN
-        SET @resultado = 0;  -- acción inválida
-    END
+CREATE PROCEDURE remove_colaborador
+    @id_proyecto INT,
+    @id_usuario INT
+AS
+BEGIN
+    DELETE FROM Colaboradores WHERE id_proyecto = @id_proyecto AND id_usuario = @id_usuario;
 END;
 
