@@ -97,16 +97,87 @@ BEGIN
     WHERE id = @id;
 END;
 
+
+-- VISTAS Y PROCEDIMIENTOS PARA ARCHIVOS
+CREATE PROCEDURE proc_create_file
+    @nombre NVARCHAR(255),
+    @id_proyecto INT,
+    @id_usuario_modificador INT,
+    @id_tipo_archivo INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO Archivos (nombre, id_proyecto, id_usuario_modificador, id_tipo_archivo)
+    VALUES (@nombre, @id_proyecto, @id_usuario_modificador, @id_tipo_archivo);
+END;
+
+CREATE PROCEDURE proc_update_file
+    @file_id INT,
+    @nombre NVARCHAR(255),
+    @contenido NVARCHAR(MAX)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE Archivos
+    SET nombre = @nombre,
+        contenido = @contenido,
+        ultima_modificacion = GETDATE()
+    WHERE id = @file_id;
+END;
+
+
+CREATE PROCEDURE proc_delete_file
+    @file_id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DELETE FROM Archivos
+    WHERE id = @file_id;
+END;
+
+CREATE PROCEDURE proc_update_content
+    @file_id INT,
+    @contenido NVARCHAR(MAX),
+    @id_usuario_modificador INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE Archivos
+    SET contenido = @contenido,
+        ultima_modificacion = GETDATE(),
+        id_usuario_modificador = @id_usuario_modificador
+    WHERE id = @file_id;
+END;
+
+CREATE VIEW view_archivos AS
+SELECT * FROM Archivos;
+
+
+CREATE VIEW view_versiones_archivo AS
+SELECT 
+    v.id,
+    v.contenido,
+    v.fecha_version,
+    v.id_usuario,
+    u.nombre_usuario,
+    v.id_archivo
+FROM 
+    Versiones_Archivo v
+JOIN 
+    Usuarios u ON v.id_usuario = u.id;
+
+
+
 -- VISTAS Y PROCEDIMIENTOS PARA tipo_archivo
 -- Vista general, filtrar busquedas usando where
 CREATE VIEW Vista_Tipo_Archivo AS
 SELECT * FROM Tipo_Archivo;
-GO
 
 -- Procedimiento: Crear nuevo tipo de archivo
-IF OBJECT_ID('Crear_Tipo_Archivo', 'P') IS NOT NULL
-    DROP PROCEDURE Crear_Tipo_Archivo;
-GO
 
 CREATE PROCEDURE Crear_Tipo_Archivo
     @nombre NVARCHAR(50),
@@ -126,4 +197,3 @@ BEGIN
         SET @resultado = 0;
     END CATCH
 END;
-GO
