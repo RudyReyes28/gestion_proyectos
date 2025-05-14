@@ -61,6 +61,42 @@ BEGIN
 
 END;
 
+
+-- VISTAS Y PROCEDIMIENTOS PARA USUARIOS
+CREATE VIEW view_usuarios AS
+SELECT * FROM Usuarios;
+
+CREATE PROCEDURE proc_create_user
+    @nombre_usuario NVARCHAR(50),
+    @email NVARCHAR(100),
+    @contraseña NVARCHAR(255),
+    @biografia NVARCHAR(500) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    INSERT INTO Usuarios (nombre_usuario, email, contraseña, biografia)
+    VALUES (@nombre_usuario, @email, @contraseña, @biografia);
+END;
+
+
+CREATE PROCEDURE proc_update_user
+    @id INT,
+    @nombre_usuario NVARCHAR(50) = NULL,
+    @email NVARCHAR(100) = NULL,
+    @biografia NVARCHAR(500) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE Usuarios
+    SET 
+        nombre_usuario = ISNULL(@nombre_usuario, nombre_usuario),
+        email = ISNULL(@email, email),
+        biografia = ISNULL(@biografia, biografia)
+    WHERE id = @id;
+END;
+
 -- VISTAS Y PROCEDIMIENTOS PARA tipo_archivo
 -- Vista general, filtrar busquedas usando where
 CREATE VIEW Vista_Tipo_Archivo AS

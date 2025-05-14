@@ -18,39 +18,33 @@ class UsuariosDAO:
         self.cursor = connection.cursor()
     
     def create_user(self, nombre_usuario, email, contraseña, biografia=None):
-        query = "INSERT INTO Usuarios (nombre_usuario, email, contraseña, biografia) VALUES (?, ?, ?, ?)"
-        password_hash = generate_password_hash(contraseña)
-        self.cursor.execute(query, (nombre_usuario, email, password_hash, biografia))
-        self.connection.commit()
-        return self.cursor.rowcount > 0
+        try:
+            
+            hashed_password = generate_password_hash(contraseña)
+            self.cursor.execute("EXEC proc_create_user @nombre_usuario=?, @email=?, @contraseña=?, @biografia=?", 
+                            (nombre_usuario, email, hashed_password, biografia))
+            
+            self.connection.commit()
+            return True
+        except Exception as e:
+            self.connection.rollback()
+            return False
+        
     
-    def update_user(self, user_id, nombre_usuario=None, email=None, contraseña=None, biografia=None):
-        query = "UPDATE Usuarios SET "
-        params = []
-        if nombre_usuario:
-            query += "nombre_usuario = ?, "
-            params.append(nombre_usuario)
-        if email:
-            query += "email = ?, "
-            params.append(email)
-        if contraseña:
-            query += "contraseña = ?, "
-            params.append(contraseña)
-        if biografia:
-            query += "biografia = ? "
-            params.append(biografia)
-        else:
-            query = query.rstrip(", ")
-        query += "WHERE id = ?"
-        params.append(user_id)
-        self.cursor.execute(query, tuple(params))
-        self.connection.commit()
-        return self.cursor.rowcount > 0
+    def update_user(self, user_id, nombre_usuario=None, email=None, biografia=None):
+        try:
+            self.cursor.execute("EXEC proc_update_user @id=?, @nombre_usuario=?, @email=?, @biografia=?",
+                            (user_id, nombre_usuario, email, biografia))
+            self.connection.commit()
+            return True
+        except Exception as e:
+            self.connection.rollback()
+            return False
     
     def update_password(self, user_id, old_password, new_password, confirm_password):
         if new_password != confirm_password:
             return False
-        query = "SELECT contraseña FROM Usuarios WHERE id = ?"
+        query = "SELECT contraseña FROM view_usuarios WHERE id = ?"
         self.cursor.execute(query, (user_id,))
         user = self.cursor.fetchone()
         if not user or not check_password_hash(user[0], old_password):
@@ -71,12 +65,12 @@ class UsuariosDAO:
         return self.cursor.rowcount > 0
     
     def get_user_by_id(self, user_id):
-        query = "SELECT * FROM Usuarios WHERE id = ?"
+        query = "SELECT * FROM view_usuarios WHERE id = ?"
         self.cursor.execute(query, (user_id,))
         return self.cursor.fetchone()
     
     def authenticate_user(self, email, contraseña):
-        query = "SELECT * FROM Usuarios WHERE email = ?"
+        query = "SELECT * FROM view_usuarios WHERE email = ?"
         self.cursor.execute(query, (email,))
         user = self.cursor.fetchone()
         if user and check_password_hash(user[3], contraseña):
@@ -84,12 +78,12 @@ class UsuariosDAO:
         return None
     
     def get_users(self):
-        query = "SELECT * FROM Usuarios"
+        query = "SELECT * FROM view_usuarios"
         self.cursor.execute(query)
         return self.cursor.fetchall()
     
     def get_user_by_email(self, email):
-        query = "SELECT * FROM Usuarios WHERE email = ?"
+        query = "SELECT * FROM view_usuarios WHERE email = ?"
         self.cursor.execute(query, (email,))
         return self.cursor.fetchone()
     
