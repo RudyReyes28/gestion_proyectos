@@ -1,3 +1,67 @@
+-- VISTAS Y PROCEDIMIENTOS PARA PROYECTOS
+CREATE VIEW get_project AS
+SELECT * FROM Proyectos;
+
+
+
+CREATE VIEW get_project_collaborative AS
+SELECT p.*, c.id_usuario
+FROM Colaboradores c
+JOIN Proyectos p ON c.id_proyecto = p.id;
+
+
+
+CREATE VIEW view_project_owner AS
+SELECT 
+    p.id AS id_proyecto,
+    p.id_creador,
+    u.nombre_usuario
+FROM 
+    Proyectos p
+JOIN 
+    Usuarios u ON u.id = p.id_creador;
+
+
+
+CREATE PROCEDURE proc_create_project
+    @nombre NVARCHAR(100),
+    @descripcion NVARCHAR(500),
+    @visibilidad NVARCHAR(20),
+    @id_creador INT
+AS
+BEGIN
+    INSERT INTO Proyectos (nombre, descripcion, visibilidad, id_creador)
+    VALUES (@nombre, @descripcion, @visibilidad, @id_creador);
+
+END;
+
+
+CREATE PROCEDURE proc_update_project
+    @id INT,
+    @nombre NVARCHAR(100),
+    @descripcion NVARCHAR(500),
+    @visibilidad NVARCHAR(20)
+AS
+BEGIN
+    UPDATE Proyectos
+    SET nombre = @nombre,
+        descripcion = @descripcion,
+        visibilidad = @visibilidad
+    WHERE id = @id;
+
+END;
+
+
+CREATE PROCEDURE proc_delete_project
+    @id INT
+AS
+BEGIN
+    DELETE FROM Proyectos
+    WHERE id = @id;
+
+END;
+
+-- VISTAS Y PROCEDIMIENTOS PARA tipo_archivo
 -- Vista general, filtrar busquedas usando where
 CREATE VIEW Vista_Tipo_Archivo AS
 SELECT * FROM Tipo_Archivo;
