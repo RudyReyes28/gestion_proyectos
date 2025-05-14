@@ -15,18 +15,7 @@ class ColaboradorDAO:
         self.connection = connection
         self.cursor = connection.cursor()
 
-    def add_colaborador(self, id_proyecto, id_usuario):
-        query = """
-        DECLARE @resultado BIT;
-        EXEC sp_gestionar_colaborador @id_proyecto = ?, @id_usuario = ?, @accion = ?, @resultado = @resultado OUTPUT;
-        SELECT @resultado;
-        """
-        self.cursor.execute(query, (id_proyecto, id_usuario, 'agregar'))
-        self.connection.commit()
-        result = self.cursor.fetchone()
-        return result[0] == 1
-
-
+    
     def remove_colaborador(self, id_proyecto, id_usuario):
         try:
             self.cursor.execute("EXEC remove_colaborador @id_proyecto = ?, @id_usuario = ?", (id_proyecto, id_usuario))
@@ -89,13 +78,4 @@ class ColaboradorDAO:
             self.connection.rollback()
             return False
 
-    def remove_colaborator(self, id_proyecto, id_usuario):
-        query = """
-        DECLARE @resultado BIT;
-        EXEC sp_gestionar_colaborador @id_proyecto = ?, @id_usuario = ?, @accion = ?, @resultado = @resultado OUTPUT;
-        SELECT @resultado;
-        """
-        self.cursor.execute(query, (id_proyecto, id_usuario, 'eliminar'))
-        self.connection.commit()
-        result = self.cursor.fetchone()
-        return result[0] == 1
+    
