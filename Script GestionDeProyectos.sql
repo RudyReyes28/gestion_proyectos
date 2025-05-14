@@ -29,11 +29,11 @@ CREATE TABLE Proyectos (
 );
 
 INSERT INTO Proyectos (nombre, descripcion, visibilidad, id_creador) VALUES
-('Sistema de Inventario', 'Aplicación web para gestionar el inventario de una tienda.', 'publico', 7),
-('Blog Personal', 'Blog para compartir artículos sobre programación.', 'privado', 7),
-('Gestor de Tareas', 'Proyecto colaborativo para manejar tareas de equipo.', 'publico', 7),
-('Plataforma de Cursos', 'Sitio para ofrecer cursos en línea.', 'privado', 7),
-('Portafolio Profesional', NULL, 'publico', 7);
+('Sistema de Inventario', 'Aplicación web para gestionar el inventario de una tienda.', 'publico', 2),
+('Blog Personal', 'Blog para compartir artículos sobre programación.', 'privado', 2),
+('Gestor de Tareas', 'Proyecto colaborativo para manejar tareas de equipo.', 'publico', 2),
+('Plataforma de Cursos', 'Sitio para ofrecer cursos en línea.', 'privado', 2),
+('Portafolio Profesional', NULL, 'publico', 2);
 
 CREATE TABLE Tipo_Archivo(
     id INT PRIMARY KEY IDENTITY(1,1),

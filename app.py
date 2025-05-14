@@ -417,9 +417,8 @@ def profile():
             nombre_usuario = request.form["nombre_usuario"]
             email = request.form["email"]
             biografia = request.form["biografia"]
-            contraseña = None
             
-            if usuariosDao.update_user(session["user_id"], nombre_usuario, email, contraseña, biografia):
+            if usuariosDao.update_user(session["user_id"], nombre_usuario, email, biografia):
                 user = usuariosDao.get_user_by_id(session["user_id"])
                 if user:
                     
